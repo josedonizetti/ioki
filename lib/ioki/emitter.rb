@@ -22,18 +22,10 @@ module Ioki
 
     def immediate_rep(code)
       case
-      when fixnum?(code)
-        return "#{code << 2}"
-      when boolean?(code)
-        if code == "#t"
-          return "#{True}"
-        else
-          return "#{False}"
-        end
-      when empty_list?(code)
-        return "#{EmptyList}"
-      else
-        return "#{(code.ord << 8) | 15}"
+      when fixnum?(code); code << 2
+      when boolean?(code); code == "#t" ? True : False
+      when empty_list?(code); EmptyList
+      else; (code.ord << 8) | 15
       end
     end
 
