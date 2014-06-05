@@ -72,7 +72,7 @@ module Ioki
 
     def fixnum?(code)
       if code.kind_of? Fixnum
-        return false if x < fixnumLower || x > fixnumUpper
+        return false if code < fixnumLower || code > fixnumUpper
         return true
       end
 
