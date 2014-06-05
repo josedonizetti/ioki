@@ -1,5 +1,5 @@
 require "ioki/version"
+require "ioki/emitter"
 
 module Ioki
-  # Your code goes here...
 end
