@@ -23,4 +23,5 @@ describe Ioki::Emitter do
       expect(result).to eq(immediate)
     end
   end
+  
 end

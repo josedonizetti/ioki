@@ -36,6 +36,18 @@ module Ioki
       write_tabbed("popl #{register}")
     end
 
+    def shl(code)
+      write_tabbed("shl #{code}")
+    end
+
+    def shr(code)
+      write_tabbed("shr #{code}")
+    end
+
+    def or(code)
+      write_tabbed("or #{code}")
+    end
+
     def ret
       write_tabbed("ret")
     end

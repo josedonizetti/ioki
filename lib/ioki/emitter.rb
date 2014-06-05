@@ -39,13 +39,38 @@ module Ioki
       if immediate?(code)
         asm.movl("$#{immediate_rep(code)}, %eax")
       else
-        immediate = parse_immediate(code).to_i
-        asm.movl("$#{immediate_rep(immediate)}, %eax")
-        asm.addl("$#{immediate_rep(1)}, %eax")
+        emit_primitive(code)
       end
       asm.popl("%ebp")
       asm.ret
       asm.close
+    end
+
+    def emit_primitive(code)
+      names = {
+        "fxadd1" => "emit_fxadd1",
+        "fixnum->char" => "emit_fixnum_to_char",
+        "char->fixnum" => "emit_char_to_fixnum"
+      }
+      primitive_name, immediate = parse_primitive(code)
+      send(names[primitive_name], immediate)
+    end
+
+    def emit_fxadd1(immediate)
+      asm.movl("$#{immediate_rep(immediate.to_i)}, %eax")
+      asm.addl("$#{immediate_rep(1)}, %eax")
+    end
+
+    def emit_fixnum_to_char(immediate)
+      asm.movl("$#{immediate_rep(immediate.to_i)}, %eax")
+      asm.shl("$6, %eax")
+      asm.or("$63, %eax")
+    end
+
+    def emit_char_to_fixnum(immediate)
+      immediate = immediate.delete("#\\")
+      asm.movl("$#{immediate_rep(immediate)}, %eax")
+      asm.shr("$6, %eax")
     end
 
     def clean
@@ -90,9 +115,10 @@ module Ioki
       code == "" || code.length == 1
     end
 
-    def parse_immediate(code)
+    def parse_primitive(code)
       code = code.delete("()")
-      code.split(" ")[1].strip
+      args = code.split(" ")
+      return args[0].strip, args[1].strip
     end
 
     def asm
