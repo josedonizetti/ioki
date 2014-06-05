@@ -64,11 +64,10 @@ module Ioki
 
     def fixnum?(code)
       if code.kind_of? Fixnum
-        return false if code < fixnumLower || code > fixnumUpper
-        return true
+        return true if code >= fixnumLower && code <= fixnumUpper
       end
 
-      return false
+      false
     end
 
     def boolean?(code)
