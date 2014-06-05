@@ -20,7 +20,7 @@ describe Ioki::Emitter do
       result = `sh compile.sh`.chomp
 
       emitter.clean
-      expect(result).to eql(immediate)
+      expect(result).to eq(immediate)
     end
   end
 end

@@ -24,6 +24,10 @@ module Ioki
       write_tabbed("movl #{code}")
     end
 
+    def addl(code)
+      write_tabbed("addl #{code}")
+    end
+
     def pushl(register)
       write_tabbed("pushl #{register}")
     end

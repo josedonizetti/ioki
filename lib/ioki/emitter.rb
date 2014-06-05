@@ -15,8 +15,8 @@ module Ioki
       @asm = Asm.new(file_name)
     end
 
-    def immediate(code)
-      return true if fixnum?(code) || boolean?(code) || empty_list?(code)
+    def immediate?(code)
+      return true if fixnum?(code) || boolean?(code) || empty_list?(code) || char?(code)
       return false
     end
 
@@ -35,8 +35,14 @@ module Ioki
       asm.align("4, 0x90")
       asm.declare_function("_scheme_entry:")
       asm.pushl("%ebp")
-      asm.movl("%esp, %ebp\n")
-      asm.movl("$#{immediate_rep(code)}, %eax")
+      asm.movl("%esp, %ebp")
+      if immediate?(code)
+        asm.movl("$#{immediate_rep(code)}, %eax")
+      else
+        immediate = parse_immediate(code).to_i
+        asm.movl("$#{immediate_rep(immediate)}, %eax")
+        asm.addl("$#{immediate_rep(1)}, %eax")
+      end
       asm.popl("%ebp")
       asm.ret
       asm.close
@@ -80,6 +86,13 @@ module Ioki
 
     def char?(code)
       code.kind_of? String
+      code = code.delete("()")
+      code == "" || code.length == 1
+    end
+
+    def parse_immediate(code)
+      code = code.delete("()")
+      code.split(" ")[1].strip
     end
 
     def asm

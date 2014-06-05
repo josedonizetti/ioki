@@ -8,7 +8,7 @@ describe Ioki::Emitter do
       emitter.emit_program(integer)
       result = `sh compile.sh`.chomp
 
-      expect(result).to eql(integer.to_s)
+      expect(result).to eq(integer.to_s)
       emitter.clean
     end
   end
