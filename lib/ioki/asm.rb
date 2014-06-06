@@ -48,6 +48,26 @@ module Ioki
       write_tabbed("or #{code}")
     end
 
+    def and(code)
+      write_tabbed("and #{code}")
+    end
+
+    def cmp(code)
+      write_tabbed("cmp #{code}")
+    end
+
+    def sete(code)
+      write_tabbed("sete #{code}")
+    end
+
+    def movzbl(code)
+      write_tabbed("movzbl #{code}")
+    end
+
+    def sal(code)
+      write_tabbed("sal #{code}")
+    end
+
     def ret
       write_tabbed("ret")
     end

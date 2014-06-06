@@ -9,6 +9,9 @@ module Ioki
     CharMask        = 0x3F
     FixnumShift     = 2
     WordSize        = 4
+    BoolBit = 6
+    FxMask = 0x03
+    FxTag = 0x00
 
 
     def initialize(file_name)
@@ -50,7 +53,8 @@ module Ioki
       names = {
         "fxadd1" => "emit_fxadd1",
         "fixnum->char" => "emit_fixnum_to_char",
-        "char->fixnum" => "emit_char_to_fixnum"
+        "char->fixnum" => "emit_char_to_fixnum",
+        "fixnum?" => "emit_fixnum?"
       }
       primitive_name, immediate = parse_primitive(code)
       send(names[primitive_name], immediate)
@@ -71,6 +75,17 @@ module Ioki
       immediate = immediate.delete("#\\")
       asm.movl("$#{immediate_rep(immediate)}, %eax")
       asm.shr("$6, %eax")
+    end
+
+    def emit_fixnum?(immediate)
+      immediate = immediate.to_i if /([0-9])/ =~ immediate
+      asm.movl("$#{immediate_rep(immediate)}, %eax")
+      asm.and("$3, %al")
+      asm.cmp("$0, %al")
+      asm.sete("%al")
+      asm.movzbl("%al, %eax")
+      asm.sal("$6, %al")
+      asm.or("$47, %al")
     end
 
     def clean

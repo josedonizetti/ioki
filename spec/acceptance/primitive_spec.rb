@@ -71,4 +71,33 @@ describe Ioki::Emitter do
     end
   end
 
+  it "should compile fixnum?" do
+     primitives = {
+       "(fixnum? 0)" => "#t",
+       "(fixnum? 1)" => "#t",
+       "(fixnum? -1)" => "#t",
+       "(fixnum? 37287)" => "#t",
+       "(fixnum? -23873)" => "#t",
+       "(fixnum? 536870911)" => "#t",
+       "(fixnum? -536870912)" => "#t",
+       "(fixnum? #t)" => "#f",
+       "(fixnum? #f)" => "#f",
+       #"(fixnum? ())" => "#f",
+       #"(fixnum? #\\Q)" => "#f"
+     }
+
+     #"(fixnum? (fixnum? 12))" => "#f",
+     #"(fixnum? (fixnum? #f))" => "#f",
+     #"(fixnum? (fixnum? #\\A))" => "#f",
+     #"(fixnum? ($char->fixnum #\\r))" => "#t",
+     #"(fixnum? ($fixnum->char 12))" => "#f",
+
+     primitives.each do |code, expected|
+       emitter = Ioki::Emitter.new("test.s")
+       emitter.emit_program(code)
+       result = `sh compile.sh`.chomp
+       emitter.clean
+       expect(result).to eq(expected)
+     end
+  end
 end
