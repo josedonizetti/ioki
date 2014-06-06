@@ -55,7 +55,8 @@ module Ioki
         "fixnum->char" => "emit_fixnum_to_char",
         "char->fixnum" => "emit_char_to_fixnum",
         "fixnum?" => "emit_fixnum?",
-        "fxzero?" => "emit_fxzero?"
+        "fxzero?" => "emit_fxzero?",
+        "null?" => "emit_null?"
       }
       primitive_name, immediate = parse_primitive(code)
       send(names[primitive_name], immediate)
@@ -93,6 +94,16 @@ module Ioki
       immediate = immediate.to_i if /([0-9])/ =~ immediate
       asm.movl("$#{immediate_rep(immediate)}, %eax")
       asm.cmp("$0, %eax")
+      asm.sete("%al")
+      asm.movzbl("%al, %eax")
+      asm.sal("$6, %al")
+      asm.or("$47, %al")
+    end
+
+    def emit_null?(immediate)
+      immediate = immediate.to_i if /([0-9])/ =~ immediate
+      asm.movl("$#{immediate_rep(immediate)}, %eax")
+      asm.cmp("$63, %eax")
       asm.sete("%al")
       asm.movzbl("%al, %eax")
       asm.sal("$6, %al")
@@ -142,8 +153,9 @@ module Ioki
     end
 
     def parse_primitive(code)
-      code = code.delete("()")
+      code = code[1, code.length - 2]
       args = code.split(" ")
+
       return args[0].strip, args[1].strip
     end
 

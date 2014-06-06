@@ -82,8 +82,8 @@ describe Ioki::Emitter do
        "(fixnum? -536870912)" => "#t",
        "(fixnum? #t)" => "#f",
        "(fixnum? #f)" => "#f",
-       #"(fixnum? ())" => "#f",
-       #"(fixnum? #\\Q)" => "#f"
+       "(fixnum? ())" => "#f",
+       "(fixnum? #\\Q)" => "#f"
      }
 
      #"(fixnum? (fixnum? 12))" => "#f",
@@ -106,6 +106,27 @@ describe Ioki::Emitter do
       "(fxzero? 0)" => "#t",
       "(fxzero? 1)" => "#f",
       "(fxzero? -1)" => "#f"
+    }
+
+    primitives.each do |code, expected|
+      emitter = Ioki::Emitter.new("test.s")
+      emitter.emit_program(code)
+      result = `sh compile.sh`.chomp
+      emitter.clean
+      expect(result).to eq(expected)
+    end
+  end
+
+  it "should compile null?" do
+    primitives = {
+     "(null? ())" => "#t",
+     "(null? #f)" => "#f",
+     "(null? #t)" => "#f",
+     #"(null? (null? ())) => "#f",
+     "(null? #\a)" => "#f",
+     "(null? 0)" => "#f",
+     "(null? -10)" => "#f",
+     "(null? 10)" => "#f"
     }
 
     primitives.each do |code, expected|
