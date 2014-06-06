@@ -12,6 +12,7 @@ module Ioki
     BoolBit = 6
     FxMask = 0x03
     FxTag = 0x00
+    BoolMask = 0xBF
 
 
     def initialize(file_name)
@@ -56,7 +57,8 @@ module Ioki
         "char->fixnum" => "emit_char_to_fixnum",
         "fixnum?" => "emit_fixnum?",
         "fxzero?" => "emit_fxzero?",
-        "null?" => "emit_null?"
+        "null?" => "emit_null?",
+        "boolean?" => "emit_boolean?",
       }
       primitive_name, immediate = parse_primitive(code)
       send(names[primitive_name], immediate)
@@ -104,6 +106,17 @@ module Ioki
       immediate = immediate.to_i if /([0-9])/ =~ immediate
       asm.movl("$#{immediate_rep(immediate)}, %eax")
       asm.cmp("$63, %eax")
+      asm.sete("%al")
+      asm.movzbl("%al, %eax")
+      asm.sal("$6, %al")
+      asm.or("$47, %al")
+    end
+
+    def emit_boolean?(immediate)
+      immediate = immediate.to_i if /([0-9])/ =~ immediate
+      asm.movl("$#{immediate_rep(immediate)}, %eax")
+      asm.and("$191, %al")
+      asm.cmp("$47, %al")
       asm.sete("%al")
       asm.movzbl("%al, %eax")
       asm.sal("$6, %al")

@@ -137,4 +137,26 @@ describe Ioki::Emitter do
       expect(result).to eq(expected)
     end
   end
+
+  it "should compile boolean?" do
+    primitives = {
+      "(boolean? #t)" => "#t",
+      "(boolean? #f)" => "#t",
+      "(boolean? 0)" => "#f",
+      "(boolean? 1)" => "#f",
+      "(boolean? -1)" => "#f",
+      "(boolean? ())" => "#f",
+      "(boolean? #\a)" => "#f"
+    }
+    #"(boolean? (boolean? 0)) => "#t\n"]
+    #"(boolean? (fixnum? (boolean? 0))) => "#t\n"]
+
+    primitives.each do |code, expected|
+      emitter = Ioki::Emitter.new("test.s")
+      emitter.emit_program(code)
+      result = `sh compile.sh`.chomp
+      emitter.clean
+      expect(result).to eq(expected)
+    end
+  end
 end
