@@ -100,4 +100,20 @@ describe Ioki::Emitter do
        expect(result).to eq(expected)
      end
   end
+
+  it "should compile fxzero?" do
+    primitives = {
+      "(fxzero? 0)" => "#t",
+      "(fxzero? 1)" => "#f",
+      "(fxzero? -1)" => "#f"
+    }
+
+    primitives.each do |code, expected|
+      emitter = Ioki::Emitter.new("test.s")
+      emitter.emit_program(code)
+      result = `sh compile.sh`.chomp
+      emitter.clean
+      expect(result).to eq(expected)
+    end
+  end
 end

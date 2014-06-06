@@ -54,7 +54,8 @@ module Ioki
         "fxadd1" => "emit_fxadd1",
         "fixnum->char" => "emit_fixnum_to_char",
         "char->fixnum" => "emit_char_to_fixnum",
-        "fixnum?" => "emit_fixnum?"
+        "fixnum?" => "emit_fixnum?",
+        "fxzero?" => "emit_fxzero?"
       }
       primitive_name, immediate = parse_primitive(code)
       send(names[primitive_name], immediate)
@@ -82,6 +83,16 @@ module Ioki
       asm.movl("$#{immediate_rep(immediate)}, %eax")
       asm.and("$3, %al")
       asm.cmp("$0, %al")
+      asm.sete("%al")
+      asm.movzbl("%al, %eax")
+      asm.sal("$6, %al")
+      asm.or("$47, %al")
+    end
+
+    def emit_fxzero?(immediate)
+      immediate = immediate.to_i if /([0-9])/ =~ immediate
+      asm.movl("$#{immediate_rep(immediate)}, %eax")
+      asm.cmp("$0, %eax")
       asm.sete("%al")
       asm.movzbl("%al, %eax")
       asm.sal("$6, %al")
