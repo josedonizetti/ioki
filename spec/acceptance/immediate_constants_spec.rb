@@ -14,14 +14,9 @@ describe Ioki::Emitter do
         "w", "x", "y", "z", "{", "|", "}", "~" ]
 
     immediates.each do |immediate|
-      emitter = Ioki::Emitter.new("test.s")
-      emitter.emit_program(immediate)
-
-      result = `sh compile.sh`.chomp
-
-      emitter.clean
-      expect(result).to eq(immediate)
+      got = compile_and_execute_test(immediate)
+      expect(got).to eq(immediate)
     end
   end
-  
+
 end

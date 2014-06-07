@@ -15,11 +15,8 @@ describe Ioki::Emitter do
     #"(fxadd1 (fxadd1 0))" => "2"
     #"(fxadd1 (fxadd1 (fxadd1 (fxadd1 (fxadd1 (fxadd1 12))))))" => "18"
     primitives.each do |code, expected|
-      emitter = Ioki::Emitter.new("test.s")
-      emitter.emit_program(code)
-      result = `sh compile.sh`.chomp
-      emitter.clean
-      expect(result).to eq(expected)
+      got = compile_and_execute_test(code)
+      expect(got).to eq(expected)
     end
   end
 
@@ -42,11 +39,8 @@ describe Ioki::Emitter do
     #[($char->fixnum ($fixnum->char 12)) => "12\n"]
     #[($fixnum->char ($char->fixnum #\x)) => "#\\x\n"]
     primitives.each do |code, expected|
-      emitter = Ioki::Emitter.new("test.s")
-      emitter.emit_program(code)
-      result = `sh compile.sh`.chomp
-      emitter.clean
-      expect(result).to eq(expected)
+      got = compile_and_execute_test(code)
+      expect(got).to eq(expected)
     end
   end
 
@@ -63,11 +57,8 @@ describe Ioki::Emitter do
     #[($char->fixnum ($fixnum->char 12)) => "12\n"]
     #[($fixnum->char ($char->fixnum #\x)) => "#\\x\n"]
     primitives.each do |code, expected|
-      emitter = Ioki::Emitter.new("test.s")
-      emitter.emit_program(code)
-      result = `sh compile.sh`.chomp
-      emitter.clean
-      expect(result).to eq(expected)
+      got = compile_and_execute_test(code)
+      expect(got).to eq(expected)
     end
   end
 
@@ -93,11 +84,8 @@ describe Ioki::Emitter do
      #"(fixnum? ($fixnum->char 12))" => "#f",
 
      primitives.each do |code, expected|
-       emitter = Ioki::Emitter.new("test.s")
-       emitter.emit_program(code)
-       result = `sh compile.sh`.chomp
-       emitter.clean
-       expect(result).to eq(expected)
+       got = compile_and_execute_test(code)
+       expect(got).to eq(expected)
      end
   end
 
@@ -109,11 +97,8 @@ describe Ioki::Emitter do
     }
 
     primitives.each do |code, expected|
-      emitter = Ioki::Emitter.new("test.s")
-      emitter.emit_program(code)
-      result = `sh compile.sh`.chomp
-      emitter.clean
-      expect(result).to eq(expected)
+      got = compile_and_execute_test(code)
+      expect(got).to eq(expected)
     end
   end
 
@@ -130,11 +115,8 @@ describe Ioki::Emitter do
     }
 
     primitives.each do |code, expected|
-      emitter = Ioki::Emitter.new("test.s")
-      emitter.emit_program(code)
-      result = `sh compile.sh`.chomp
-      emitter.clean
-      expect(result).to eq(expected)
+      got = compile_and_execute_test(code)
+      expect(got).to eq(expected)
     end
   end
 
@@ -152,11 +134,8 @@ describe Ioki::Emitter do
     #"(boolean? (fixnum? (boolean? 0))) => "#t\n"]
 
     primitives.each do |code, expected|
-      emitter = Ioki::Emitter.new("test.s")
-      emitter.emit_program(code)
-      result = `sh compile.sh`.chomp
-      emitter.clean
-      expect(result).to eq(expected)
+      got = compile_and_execute_test(code)
+      expect(got).to eq(expected)
     end
   end
 
@@ -175,11 +154,8 @@ describe Ioki::Emitter do
     }
 
     primitives.each do |code, expected|
-      emitter = Ioki::Emitter.new("test.s")
-      emitter.emit_program(code)
-      result = `sh compile.sh`.chomp
-      emitter.clean
-      expect(result).to eq(expected)
+      got = compile_and_execute_test(code)
+      expect(got).to eq(expected)
     end
   end
 end
