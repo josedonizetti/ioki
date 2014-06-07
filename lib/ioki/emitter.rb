@@ -59,6 +59,7 @@ module Ioki
         "fxzero?" => "emit_fxzero?",
         "null?" => "emit_null?",
         "boolean?" => "emit_boolean?",
+        "char?" => "emit_char?",
       }
       primitive_name, immediate = parse_primitive(code)
       send(names[primitive_name], immediate)
@@ -117,6 +118,22 @@ module Ioki
       asm.movl("$#{immediate_rep(immediate)}, %eax")
       asm.and("$191, %al")
       asm.cmp("$47, %al")
+      asm.sete("%al")
+      asm.movzbl("%al, %eax")
+      asm.sal("$6, %al")
+      asm.or("$47, %al")
+    end
+
+    def emit_char?(immediate)
+      if /([0-9])/ =~ immediate
+        immediate = immediate.to_i
+      elsif /(#\\)/ =~ immediate
+        immediate = immediate.delete("#\\")
+      end
+      
+      asm.movl("$#{immediate_rep(immediate)}, %eax")
+      asm.and("$#{CharMask}, %al")
+      asm.cmp("$#{CharTag}, %al")
       asm.sete("%al")
       asm.movzbl("%al, %eax")
       asm.sal("$6, %al")

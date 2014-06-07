@@ -159,4 +159,27 @@ describe Ioki::Emitter do
       expect(result).to eq(expected)
     end
   end
+
+  it "should compile char?" do
+    primitives = {
+      "(char? #\\a)" => "#t",
+      "(char? #\\Z)" => "#t",
+      "(char? #\\newline)" => "#t",
+      "(char? #t)" => "#f",
+      "(char? #f)" => "#f",
+      "(char? ())" => "#f",
+      "(char? 0)" => "#f",
+      "(char? 23870)" => "#f",
+      "(char? -23789)" => "#f"
+      #"(char? (char? #t)) => "#f",
+    }
+
+    primitives.each do |code, expected|
+      emitter = Ioki::Emitter.new("test.s")
+      emitter.emit_program(code)
+      result = `sh compile.sh`.chomp
+      emitter.clean
+      expect(result).to eq(expected)
+    end
+  end
 end
