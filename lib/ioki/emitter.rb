@@ -1,18 +1,18 @@
 module Ioki
   class Emitter
 
-    WordSize      = 0x4
-    False         = 0x2F
-    True          = 0x6F
-    EmptyList     = 0x3F
-    CharTag       = 0x0F
-    CharMask      = 0x3F
-    CharShift     = 0x8
-    FxShift       = 0x2
-    FxMask        = 0x03
-    FxTag         = 0x00
-    BoolMask      = 0xBF
-    BoolBit       = 0x6
+    WordSize        = 0x4
+    FalseValue      = 0x2F
+    TrueValue       = 0x6F
+    EmptyListValue  = 0x3F
+    CharTag         = 0x0F
+    CharMask        = 0x3F
+    CharShift       = 0x8
+    FxShift         = 0x2
+    FxMask          = 0x03
+    FxTag           = 0x00
+    BoolMask        = 0xBF
+    BoolBit         = 0x6
 
     def initialize(file_name)
       @asm = Asm.new(file_name)
@@ -26,8 +26,8 @@ module Ioki
     def immediate_rep(code)
       case
       when fixnum?(code); code << 2
-      when boolean?(code); code == "#t" ? True : False
-      when empty_list?(code); EmptyList
+      when boolean?(code); code == "#t" ? TrueValue : FalseValue
+      when empty_list?(code); EmptyListValue
       else; (code.ord << 8) | 15
       end
     end
@@ -93,7 +93,7 @@ module Ioki
       asm.sete(AL)
       asm.movzbl(AL, EAX)
       asm.sal(BoolBit, AL)
-      asm.or(False, AL)
+      asm.or(FalseValue, AL)
     end
 
     def emit_fxzero?(immediate)
@@ -106,7 +106,7 @@ module Ioki
     def emit_null?(immediate)
       immediate = immediate.to_i if /([0-9])/ =~ immediate
       asm.movl(immediate_rep(immediate), EAX)
-      asm.cmp(EmptyList, EAX)
+      asm.cmp(EmptyListValue, EAX)
       emit_cmp_bool_result
     end
 
@@ -114,7 +114,7 @@ module Ioki
       immediate = immediate.to_i if /([0-9])/ =~ immediate
       asm.movl(immediate_rep(immediate), EAX)
       asm.and(BoolMask, AL)
-      asm.cmp(False, AL)
+      asm.cmp(FalseValue, AL)
       emit_cmp_bool_result
     end
 
