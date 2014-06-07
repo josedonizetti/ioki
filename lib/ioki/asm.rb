@@ -1,75 +1,81 @@
 module Ioki
+
+  EBP = "%ebp"
+  ESP = "%esp"
+  EAX = "%eax"
+  AL = "%al"
+
   class Asm
     def initialize(file_name)
       @file = File.new(file_name, "w")
     end
 
     def section
-      write_tabbed(".section __TEXT,__text,regular,pure_instructions")
+      write_tabbed1(".section __TEXT,__text,regular,pure_instructions")
     end
 
     def globl(code)
-      write_tabbed(".globl #{code}")
+      write_tabbed1(".globl #{code}")
     end
 
     def align(code)
-      write_tabbed(".align #{code}")
+      write_tabbed1(".align #{code}")
     end
 
     def declare_function(name)
       write(name)
     end
 
-    def movl(code)
-      write_tabbed("movl #{code}")
+    def movl(src, dest)
+      write_tabbed3("movl", src, dest)
     end
 
-    def addl(code)
-      write_tabbed("addl #{code}")
+    def addl(src, dest)
+      write_tabbed3("addl", src, dest)
     end
 
     def pushl(register)
-      write_tabbed("pushl #{register}")
+      write_tabbed2("pushl", register)
     end
 
     def popl(register)
-      write_tabbed("popl #{register}")
+      write_tabbed2("popl", register)
     end
 
-    def shl(code)
-      write_tabbed("shl #{code}")
+    def shl(src, dest)
+      write_tabbed3("shl", src, dest)
     end
 
-    def shr(code)
-      write_tabbed("shr #{code}")
+    def shr(src, dest)
+      write_tabbed3("shr", src, dest)
     end
 
-    def or(code)
-      write_tabbed("or #{code}")
+    def or(src, dest)
+      write_tabbed3("or", src, dest)
     end
 
-    def and(code)
-      write_tabbed("and #{code}")
+    def and(src, dest)
+      write_tabbed3("and", src, dest)
     end
 
-    def cmp(code)
-      write_tabbed("cmp #{code}")
+    def cmp(src, dest)
+      write_tabbed3("cmp", src, dest)
     end
 
-    def sete(code)
-      write_tabbed("sete #{code}")
+    def sete(register)
+      write_tabbed2("sete", register)
     end
 
-    def movzbl(code)
-      write_tabbed("movzbl #{code}")
+    def movzbl(src, dest)
+      write_tabbed3("movzbl", src, dest)
     end
 
-    def sal(code)
-      write_tabbed("sal #{code}")
+    def sal(src, dest)
+      write_tabbed3("sal", src, dest)
     end
 
     def ret
-      write_tabbed("ret")
+      write_tabbed1("ret")
     end
 
     def close
@@ -82,8 +88,17 @@ module Ioki
       @file.write("#{code}\n")
     end
 
-    def write_tabbed(code)
-      @file.write("\t#{code}\n")
+    def write_tabbed1(ins)
+      @file.write("\t#{ins}\n")
+    end
+
+    def write_tabbed2(ins, register)
+      @file.write("\t#{ins} #{register}\n")
+    end
+
+    def write_tabbed3(ins, src, dest)
+      src = "$#{src}" if src.kind_of? Fixnum
+      @file.write("\t#{ins} #{src}, #{dest}\n")
     end
   end
 end

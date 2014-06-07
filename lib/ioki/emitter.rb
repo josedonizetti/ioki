@@ -37,14 +37,14 @@ module Ioki
       asm.globl("_scheme_entry")
       asm.align("4, 0x90")
       asm.declare_function("_scheme_entry:")
-      asm.pushl("%ebp")
-      asm.movl("%esp, %ebp")
+      asm.pushl(EBP)
+      asm.movl(ESP, EBP)
       if immediate?(code)
-        asm.movl("$#{immediate_rep(code)}, %eax")
+        asm.movl(immediate_rep(code), EAX)
       else
         emit_primitive(code)
       end
-      asm.popl("%ebp")
+      asm.popl(EBP)
       asm.ret
       asm.close
     end
@@ -65,56 +65,56 @@ module Ioki
     end
 
     def emit_fxadd1(immediate)
-      asm.movl("$#{immediate_rep(immediate.to_i)}, %eax")
-      asm.addl("$#{immediate_rep(1)}, %eax")
+      asm.movl(immediate_rep(immediate.to_i), EAX)
+      asm.addl(immediate_rep(1), EAX)
     end
 
     def emit_fixnum_to_char(immediate)
-      asm.movl("$#{immediate_rep(immediate.to_i)}, %eax")
-      asm.shl("$#{CharShift - FxShift}, %eax")
-      asm.or("$#{CharMask}, %eax")
+      asm.movl(immediate_rep(immediate.to_i), EAX)
+      asm.shl(CharShift - FxShift, EAX)
+      asm.or(CharMask, EAX)
     end
 
     def emit_char_to_fixnum(immediate)
       immediate = immediate.delete("#\\")
-      asm.movl("$#{immediate_rep(immediate)}, %eax")
-      asm.shr("$#{CharShift - FxShift}, %eax")
+      asm.movl(immediate_rep(immediate), EAX)
+      asm.shr(CharShift - FxShift, EAX)
     end
 
     def emit_fixnum?(immediate)
       immediate = immediate.to_i if /([0-9])/ =~ immediate
-      asm.movl("$#{immediate_rep(immediate)}, %eax")
-      asm.and("$#{FxMask}, %al")
-      asm.cmp("$#{FxTag}, %al")
+      asm.movl(immediate_rep(immediate), EAX)
+      asm.and(FxMask, AL)
+      asm.cmp(FxTag, AL)
       emit_cmp_bool_result
     end
 
     def emit_cmp_bool_result
-      asm.sete("%al")
-      asm.movzbl("%al, %eax")
-      asm.sal("$#{BoolBit}, %al")
-      asm.or("$#{False}, %al")
+      asm.sete(AL)
+      asm.movzbl(AL, EAX)
+      asm.sal(BoolBit, AL)
+      asm.or(False, AL)
     end
 
     def emit_fxzero?(immediate)
       immediate = immediate.to_i if /([0-9])/ =~ immediate
-      asm.movl("$#{immediate_rep(immediate)}, %eax")
-      asm.cmp("$0, %eax")
+      asm.movl(immediate_rep(immediate), EAX)
+      asm.cmp(0, EAX)
       emit_cmp_bool_result
     end
 
     def emit_null?(immediate)
       immediate = immediate.to_i if /([0-9])/ =~ immediate
-      asm.movl("$#{immediate_rep(immediate)}, %eax")
-      asm.cmp("$#{EmptyList}, %eax")
+      asm.movl(immediate_rep(immediate), EAX)
+      asm.cmp(EmptyList, EAX)
       emit_cmp_bool_result
     end
 
     def emit_boolean?(immediate)
       immediate = immediate.to_i if /([0-9])/ =~ immediate
-      asm.movl("$#{immediate_rep(immediate)}, %eax")
-      asm.and("$#{BoolMask}, %al")
-      asm.cmp("$#{False}, %al")
+      asm.movl(immediate_rep(immediate), EAX)
+      asm.and(BoolMask, AL)
+      asm.cmp(False, AL)
       emit_cmp_bool_result
     end
 
@@ -125,9 +125,9 @@ module Ioki
         immediate = immediate.delete("#\\")
       end
 
-      asm.movl("$#{immediate_rep(immediate)}, %eax")
-      asm.and("$#{CharMask}, %al")
-      asm.cmp("$#{CharTag}, %al")
+      asm.movl(immediate_rep(immediate), EAX)
+      asm.and(CharMask, AL)
+      asm.cmp(CharTag, AL)
       emit_cmp_bool_result
     end
 
