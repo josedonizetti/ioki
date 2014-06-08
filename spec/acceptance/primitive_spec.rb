@@ -158,4 +158,24 @@ describe Ioki::Emitter do
       expect(got).to eq(expected)
     end
   end
+
+  it "should compile not" do
+    primitives = {
+      "(not #t)" => "#f",
+      "(not #f)" => "#t",
+      "(not 15)" => "#f",
+      "(not ())" => "#f",
+      "(not #\\A)" => "#f"
+    }
+    #"(not (not #t)) => "#t\n"]
+    #"(not (not #f)) => "#f\n"]
+    #"(not (not 15)) => "#t\n"]
+    #"(not (fixnum? 15)) => "#f\n"]
+    #"(not (fixnum? #f)) => "#t\n"]
+    primitives.each do |code, expected|
+      got = compile_and_execute_test(code)
+      expect(got).to eq(expected)
+    end
+  end
+
 end

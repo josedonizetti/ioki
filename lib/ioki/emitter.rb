@@ -59,6 +59,7 @@ module Ioki
         "null?" => "emit_null?",
         "boolean?" => "emit_boolean?",
         "char?" => "emit_char?",
+        "not" => "emit_not",
       }
       primitive_name, immediate = parse_primitive(code)
       send(names[primitive_name], immediate)
@@ -87,13 +88,6 @@ module Ioki
       asm.and(FxMask, AL)
       asm.cmp(FxTag, AL)
       emit_cmp_bool_result
-    end
-
-    def emit_cmp_bool_result
-      asm.sete(AL)
-      asm.movzbl(AL, EAX)
-      asm.sal(BoolBit, AL)
-      asm.or(FalseValue, AL)
     end
 
     def emit_fxzero?(immediate)
@@ -131,7 +125,26 @@ module Ioki
       emit_cmp_bool_result
     end
 
+    def emit_not(immediate)
+      if /([0-9])/ =~ immediate
+        immediate = immediate.to_i
+      elsif /(#\\)/ =~ immediate
+        immediate = immediate.delete("#\\")
+      end
+
+      asm.movl(immediate_rep(immediate), EAX)
+      asm.cmp(FalseValue,AL)
+      emit_cmp_bool_result
+    end
+
     private
+
+    def emit_cmp_bool_result
+      asm.sete(AL)
+      asm.movzbl(AL, EAX)
+      asm.sal(BoolBit, AL)
+      asm.or(FalseValue, AL)
+    end
 
     def fixnumBits
       value = (WordSize * 8) - FxShift
