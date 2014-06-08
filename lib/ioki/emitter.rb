@@ -66,9 +66,12 @@ module Ioki
         "not" => "emit_not",
         "fxlognot" => "emit_fxlognot"
       }
-      primitive_name, immediate = parse_primitive(code)
+
+      primitive_names, immediate = parse_primitive(code)
       asm.movl(immediate_rep(immediate), EAX)
-      send(names[primitive_name])
+      primitive_names.each do |primitive_name|
+        send(names[primitive_name])
+      end
     end
 
     def emit_fxadd1
@@ -171,10 +174,12 @@ module Ioki
     end
 
     def parse_primitive(code)
-      code = code[1, code.length - 2]
-      args = code.split(" ")
+      args = code.split
+      immediate = args.pop
+      immediate = immediate[0,(immediate.size - args.length)]
+      names = args.map {|name| name.delete("(").strip }
 
-      return args[0].strip, args[1].strip
+      return names.reverse, immediate.strip
     end
 
     def asm
