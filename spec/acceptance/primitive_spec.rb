@@ -11,8 +11,9 @@ describe Ioki::Emitter do
       "(fxadd1 1000)" => "1001",
       "(fxadd1 536870910)" => "536870911",
       "(fxadd1 -536870912)" => "-536870911"
+      #"(fxadd1 (fxadd1 0))" => "2"
     }
-    #"(fxadd1 (fxadd1 0))" => "2"
+
     #"(fxadd1 (fxadd1 (fxadd1 (fxadd1 (fxadd1 (fxadd1 12))))))" => "18"
     primitives.each do |code, expected|
       got = compile_and_execute_test(code)
@@ -36,8 +37,8 @@ describe Ioki::Emitter do
       "(char->fixnum #\\9)" => "57",
     }
 
-    #[($char->fixnum ($fixnum->char 12)) => "12\n"]
-    #[($fixnum->char ($char->fixnum #\x)) => "#\\x\n"]
+    #[(char->fixnum (fixnum->char 12)) => "12\n"]
+    #[(fixnum->char (char->fixnum #\x)) => "#\\x\n"]
     primitives.each do |code, expected|
       got = compile_and_execute_test(code)
       expect(got).to eq(expected)
@@ -54,8 +55,8 @@ describe Ioki::Emitter do
       "(char->fixnum #\\9)" => "57",
     }
 
-    #[($char->fixnum ($fixnum->char 12)) => "12\n"]
-    #[($fixnum->char ($char->fixnum #\x)) => "#\\x\n"]
+    #[(char->fixnum (fixnum->char 12)) => "12\n"]
+    #[(fixnum->char (char->fixnum #\x)) => "#\\x\n"]
     primitives.each do |code, expected|
       got = compile_and_execute_test(code)
       expect(got).to eq(expected)
@@ -80,8 +81,8 @@ describe Ioki::Emitter do
      #"(fixnum? (fixnum? 12))" => "#f",
      #"(fixnum? (fixnum? #f))" => "#f",
      #"(fixnum? (fixnum? #\\A))" => "#f",
-     #"(fixnum? ($char->fixnum #\\r))" => "#t",
-     #"(fixnum? ($fixnum->char 12))" => "#f",
+     #"(fixnum? (char->fixnum #\\r))" => "#t",
+     #"(fixnum? (fixnum->char 12))" => "#f",
 
      primitives.each do |code, expected|
        got = compile_and_execute_test(code)
@@ -167,11 +168,11 @@ describe Ioki::Emitter do
       "(not ())" => "#f",
       "(not #\\A)" => "#f"
     }
-    #"(not (not #t)) => "#t\n"]
-    #"(not (not #f)) => "#f\n"]
-    #"(not (not 15)) => "#t\n"]
-    #"(not (fixnum? 15)) => "#f\n"]
-    #"(not (fixnum? #f)) => "#t\n"]
+    #"(not (not #t)) => "#t"]
+    #"(not (not #f)) => "#f"]
+    #"(not (not 15)) => "#t"]
+    #"(not (fixnum? 15)) => "#f"]
+    #"(not (fixnum? #f)) => "#t"]
     primitives.each do |code, expected|
       got = compile_and_execute_test(code)
       expect(got).to eq(expected)
@@ -186,9 +187,9 @@ describe Ioki::Emitter do
       "(fxlognot -2)" => "1",
     }
 
-    #"($fxlognot 536870911) => "-536870912\n"]
-    #"($fxlognot -536870912) => "536870911\n"]
-    #"($fxlognot ($fxlognot 237463)) => "237463\n"]
+    #"(fxlognot 536870911) => "-536870912"]
+    #"(fxlognot -536870912) => "536870911"]
+    #"(fxlognot (fxlognot 237463)) => "237463"]
     primitives.each do |code, expected|
       got = compile_and_execute_test(code)
       expect(got).to eq(expected)

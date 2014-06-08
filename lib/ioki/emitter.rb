@@ -67,66 +67,57 @@ module Ioki
         "fxlognot" => "emit_fxlognot"
       }
       primitive_name, immediate = parse_primitive(code)
-      send(names[primitive_name], immediate)
+      asm.movl(immediate_rep(immediate), EAX)
+      send(names[primitive_name])
     end
 
-    def emit_fxadd1(immediate)
-      asm.movl(immediate_rep(immediate), EAX)
+    def emit_fxadd1
       asm.addl(immediate_rep(1), EAX)
     end
 
-    def emit_fixnum_to_char(immediate)
-      asm.movl(immediate_rep(immediate), EAX)
+    def emit_fixnum_to_char
       asm.shl(CharShift - FxShift, EAX)
       asm.or(CharMask, EAX)
     end
 
-    def emit_char_to_fixnum(immediate)
-      asm.movl(immediate_rep(immediate), EAX)
+    def emit_char_to_fixnum
       asm.shr(CharShift - FxShift, EAX)
     end
 
-    def emit_fixnum?(immediate)
-      asm.movl(immediate_rep(immediate), EAX)
+    def emit_fixnum?
       asm.and(FxMask, AL)
       asm.cmp(FxTag, AL)
       emit_cmp_bool_result
     end
 
-    def emit_fxzero?(immediate)
-      asm.movl(immediate_rep(immediate), EAX)
+    def emit_fxzero?
       asm.cmp(0, EAX)
       emit_cmp_bool_result
     end
 
-    def emit_null?(immediate)
-      asm.movl(immediate_rep(immediate), EAX)
+    def emit_null?
       asm.cmp(EmptyListValue, EAX)
       emit_cmp_bool_result
     end
 
-    def emit_boolean?(immediate)
-      asm.movl(immediate_rep(immediate), EAX)
+    def emit_boolean?
       asm.and(BoolMask, AL)
       asm.cmp(FalseValue, AL)
       emit_cmp_bool_result
     end
 
-    def emit_char?(immediate)
-      asm.movl(immediate_rep(immediate), EAX)
+    def emit_char?
       asm.and(CharMask, AL)
       asm.cmp(CharTag, AL)
       emit_cmp_bool_result
     end
 
-    def emit_not(immediate)
-      asm.movl(immediate_rep(immediate), EAX)
+    def emit_not
       asm.cmp(FalseValue,AL)
       emit_cmp_bool_result
     end
 
-    def emit_fxlognot(immediate)
-      asm.movl(immediate_rep(immediate), EAX)
+    def emit_fxlognot
       asm.shr(FxShift, EAX)
       asm.not(EAX)
       asm.shl(FxShift, EAX)
