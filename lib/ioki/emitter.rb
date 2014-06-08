@@ -40,7 +40,6 @@ module Ioki
     def emit_program(code)
       asm.section
       asm.globl("_scheme_entry")
-      asm.align("4, 0x90")
       asm.declare_function("_scheme_entry:")
       asm.pushl(EBP)
       asm.movl(ESP, EBP)
