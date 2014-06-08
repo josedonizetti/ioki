@@ -22,12 +22,12 @@ describe Ioki::Emitter do
 
   it "should compile fixnum->char" do
     primitives = {
-      "(fixnum->char 65)" => "A",
-      "(fixnum->char 97)" => "a",
-      "(fixnum->char 122)" => "z",
-      "(fixnum->char 90)" => "Z",
-      "(fixnum->char 48)" => "0",
-      "(fixnum->char 57)" => "9",
+      "(fixnum->char 65)" => "#\\A",
+      "(fixnum->char 97)" => "#\\a",
+      "(fixnum->char 122)" => "#\\z",
+      "(fixnum->char 90)" => "#\\Z",
+      "(fixnum->char 48)" => "#\\0",
+      "(fixnum->char 57)" => "#\\9",
       "(char->fixnum #\\A)" => "65",
       "(char->fixnum #\\a)" => "97",
       "(char->fixnum #\\z)" => "122",
@@ -108,7 +108,7 @@ describe Ioki::Emitter do
      "(null? #f)" => "#f",
      "(null? #t)" => "#f",
      #"(null? (null? ())) => "#f",
-     "(null? #\a)" => "#f",
+     "(null? #\\a)" => "#f",
      "(null? 0)" => "#f",
      "(null? -10)" => "#f",
      "(null? 10)" => "#f"
@@ -128,7 +128,7 @@ describe Ioki::Emitter do
       "(boolean? 1)" => "#f",
       "(boolean? -1)" => "#f",
       "(boolean? ())" => "#f",
-      "(boolean? #\a)" => "#f"
+      "(boolean? #\\a)" => "#f"
     }
     #"(boolean? (boolean? 0)) => "#t\n"]
     #"(boolean? (fixnum? (boolean? 0))) => "#t\n"]

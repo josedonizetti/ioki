@@ -23,12 +23,17 @@ module Ioki
       return false
     end
 
-    def immediate_rep(code)
+    def immediate_rep(immediate)
       case
-      when fixnum?(code); code << 2
-      when boolean?(code); code == "#t" ? TrueValue : FalseValue
-      when empty_list?(code); EmptyListValue
-      else; (code.ord << 8) | 15
+      when boolean?(immediate)
+        return immediate == "#t" ? TrueValue : FalseValue
+      when empty_list?(immediate)
+        return EmptyListValue
+      when char?(immediate)
+        immediate = immediate[2,immediate.length-1]
+        return (immediate.ord << 8) | 15
+      when fixnum?(immediate)
+        return immediate.to_i << 2
       end
     end
 
@@ -67,24 +72,22 @@ module Ioki
     end
 
     def emit_fxadd1(immediate)
-      asm.movl(immediate_rep(immediate.to_i), EAX)
+      asm.movl(immediate_rep(immediate), EAX)
       asm.addl(immediate_rep(1), EAX)
     end
 
     def emit_fixnum_to_char(immediate)
-      asm.movl(immediate_rep(immediate.to_i), EAX)
+      asm.movl(immediate_rep(immediate), EAX)
       asm.shl(CharShift - FxShift, EAX)
       asm.or(CharMask, EAX)
     end
 
     def emit_char_to_fixnum(immediate)
-      immediate = immediate.delete("#\\")
       asm.movl(immediate_rep(immediate), EAX)
       asm.shr(CharShift - FxShift, EAX)
     end
 
     def emit_fixnum?(immediate)
-      immediate = immediate.to_i if /([0-9])/ =~ immediate
       asm.movl(immediate_rep(immediate), EAX)
       asm.and(FxMask, AL)
       asm.cmp(FxTag, AL)
@@ -92,21 +95,18 @@ module Ioki
     end
 
     def emit_fxzero?(immediate)
-      immediate = immediate.to_i if /([0-9])/ =~ immediate
       asm.movl(immediate_rep(immediate), EAX)
       asm.cmp(0, EAX)
       emit_cmp_bool_result
     end
 
     def emit_null?(immediate)
-      immediate = immediate.to_i if /([0-9])/ =~ immediate
       asm.movl(immediate_rep(immediate), EAX)
       asm.cmp(EmptyListValue, EAX)
       emit_cmp_bool_result
     end
 
     def emit_boolean?(immediate)
-      immediate = immediate.to_i if /([0-9])/ =~ immediate
       asm.movl(immediate_rep(immediate), EAX)
       asm.and(BoolMask, AL)
       asm.cmp(FalseValue, AL)
@@ -114,12 +114,6 @@ module Ioki
     end
 
     def emit_char?(immediate)
-      if /([0-9])/ =~ immediate
-        immediate = immediate.to_i
-      elsif /(#\\)/ =~ immediate
-        immediate = immediate.delete("#\\")
-      end
-
       asm.movl(immediate_rep(immediate), EAX)
       asm.and(CharMask, AL)
       asm.cmp(CharTag, AL)
@@ -127,24 +121,12 @@ module Ioki
     end
 
     def emit_not(immediate)
-      if /([0-9])/ =~ immediate
-        immediate = immediate.to_i
-      elsif /(#\\)/ =~ immediate
-        immediate = immediate.delete("#\\")
-      end
-
       asm.movl(immediate_rep(immediate), EAX)
       asm.cmp(FalseValue,AL)
       emit_cmp_bool_result
     end
 
     def emit_fxlognot(immediate)
-      if /([0-9])/ =~ immediate
-        immediate = immediate.to_i
-      elsif /(#\\)/ =~ immediate
-        immediate = immediate.delete("#\\")
-      end
-
       asm.movl(immediate_rep(immediate), EAX)
       asm.shr(FxShift, EAX)
       asm.not(EAX)
@@ -173,9 +155,13 @@ module Ioki
       (2 ** fixnumBits) - 1
     end
 
-    def fixnum?(code)
-      if code.kind_of? Fixnum
-        return true if code >= fixnumLower && code <= fixnumUpper
+    def fixnum?(immediate)
+      if immediate.kind_of? String
+        immediate = immediate.to_i if /^[0-9]/ =~ immediate || /^[-][0-9]/ =~ immediate
+      end
+
+      if immediate.kind_of? Fixnum
+        return true if immediate >= fixnumLower && immediate <= fixnumUpper
       end
 
       false
@@ -190,9 +176,8 @@ module Ioki
     end
 
     def char?(code)
-      code.kind_of? String
-      code = code.delete("()")
-      code == "" || code.length == 1
+      return code.start_with?("#\\") if code.kind_of?(String)
+      false
     end
 
     def parse_primitive(code)

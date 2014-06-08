@@ -25,7 +25,7 @@ static void print_ptr(ptr x) {
   } else if (x == empty_list){
     printf("()");
   } else {
-    printf("%c", x >> 8);
+    printf("#\\%c", x >> 8);
     // printf("#<unknow 0x%08x>", x);
   }
   printf("\n");
