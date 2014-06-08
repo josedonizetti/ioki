@@ -74,6 +74,10 @@ module Ioki
       write_tabbed3("sal", src, dest)
     end
 
+    def not(register)
+      write_tabbed2("not", register)
+    end
+
     def ret
       write_tabbed1("ret")
     end

@@ -60,6 +60,7 @@ module Ioki
         "boolean?" => "emit_boolean?",
         "char?" => "emit_char?",
         "not" => "emit_not",
+        "fxlognot" => "emit_fxlognot"
       }
       primitive_name, immediate = parse_primitive(code)
       send(names[primitive_name], immediate)
@@ -135,6 +136,19 @@ module Ioki
       asm.movl(immediate_rep(immediate), EAX)
       asm.cmp(FalseValue,AL)
       emit_cmp_bool_result
+    end
+
+    def emit_fxlognot(immediate)
+      if /([0-9])/ =~ immediate
+        immediate = immediate.to_i
+      elsif /(#\\)/ =~ immediate
+        immediate = immediate.delete("#\\")
+      end
+
+      asm.movl(immediate_rep(immediate), EAX)
+      asm.shr(FxShift, EAX)
+      asm.not(EAX)
+      asm.shl(FxShift, EAX)
     end
 
     private

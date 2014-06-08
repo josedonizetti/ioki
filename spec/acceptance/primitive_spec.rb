@@ -178,4 +178,20 @@ describe Ioki::Emitter do
     end
   end
 
+  it "should compile fxlognot" do
+    primitives = {
+      "(fxlognot 0)" => "-1",
+      "(fxlognot -1)" => "0",
+      "(fxlognot 1)" => "-2",
+      "(fxlognot -2)" => "1",
+    }
+
+    #"($fxlognot 536870911) => "-536870912\n"]
+    #"($fxlognot -536870912) => "536870911\n"]
+    #"($fxlognot ($fxlognot 237463)) => "237463\n"]
+    primitives.each do |code, expected|
+      got = compile_and_execute_test(code)
+      expect(got).to eq(expected)
+    end
+  end
 end
