@@ -102,7 +102,7 @@ describe Ioki::Emitter do
      it_behaves_like "a primitive"
   end
 
-  describe "should compile fxzero?" do
+  describe "fxzero?" do
     let(:primitives) {{
       "(fxzero? 0)" => "#t",
       "(fxzero? 1)" => "#f",
