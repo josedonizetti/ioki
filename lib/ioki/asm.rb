@@ -78,6 +78,18 @@ module Ioki
       write_tabbed2("not", register)
     end
 
+    def label(label)
+      write_tabbed1("#{label}:")
+    end
+
+    def je(label)
+      write_tabbed2("je", label)
+    end
+
+    def jmp(label)
+      write_tabbed2("jmp", label)
+    end
+
     def ret
       write_tabbed1("ret")
     end

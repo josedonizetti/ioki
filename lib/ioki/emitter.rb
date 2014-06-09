@@ -14,8 +14,22 @@ module Ioki
     BoolMask        = 0xBF
     BoolBit         = 0x6
 
+    PRIMITIVES = {
+      "fxadd1" => "emit_fxadd1",
+      "fixnum->char" => "emit_fixnum_to_char",
+      "char->fixnum" => "emit_char_to_fixnum",
+      "fixnum?" => "emit_fixnum?",
+      "fxzero?" => "emit_fxzero?",
+      "null?" => "emit_null?",
+      "boolean?" => "emit_boolean?",
+      "char?" => "emit_char?",
+      "not" => "emit_not",
+      "fxlognot" => "emit_fxlognot"
+    }
+
     def initialize(file_name)
       @asm = Asm.new(file_name)
+      @counter = 0
     end
 
     def immediate?(code)
@@ -43,34 +57,50 @@ module Ioki
       asm.declare_function("_scheme_entry:")
       asm.pushl(EBP)
       asm.movl(ESP, EBP)
-      if immediate?(code)
-        asm.movl(immediate_rep(code), EAX)
-      else
-        emit_primitive(code)
-      end
+
+      emit_expression(code)
+
       asm.popl(EBP)
       asm.ret
       asm.close
     end
 
-    def emit_primitive(code)
-      names = {
-        "fxadd1" => "emit_fxadd1",
-        "fixnum->char" => "emit_fixnum_to_char",
-        "char->fixnum" => "emit_char_to_fixnum",
-        "fixnum?" => "emit_fixnum?",
-        "fxzero?" => "emit_fxzero?",
-        "null?" => "emit_null?",
-        "boolean?" => "emit_boolean?",
-        "char?" => "emit_char?",
-        "not" => "emit_not",
-        "fxlognot" => "emit_fxlognot"
-      }
+    def emit_if(code)
+      array = Helper.convert_sexp_to_array(code)
 
+      exp1 = array[1]
+      exp2 = array[2]
+      exp3 = array[3]
+
+      label1 = new_label
+      label2 = new_label
+
+      emit_expression(exp1)
+      asm.cmp(FalseValue, AL)
+
+      asm.je(label1)
+      emit_expression(exp2)
+      asm.jmp(label2)
+
+      asm.label(label1)
+      emit_expression(exp3)
+
+      asm.label(label2)
+    end
+
+    def emit_expression(exp)
+      case
+      when immediate?(exp); asm.movl(immediate_rep(exp), EAX)
+      when if?(exp); emit_if(exp)
+      else; emit_primitive(exp)
+      end
+    end
+
+    def emit_primitive(code)
       primitive_names, immediate = parse_primitive(code)
       asm.movl(immediate_rep(immediate), EAX)
       primitive_names.each do |primitive_name|
-        send(names[primitive_name])
+        send(PRIMITIVES[primitive_name])
       end
     end
 
@@ -173,6 +203,10 @@ module Ioki
       false
     end
 
+    def if?(code)
+      code.start_with?("(if")
+    end
+
     def parse_primitive(code)
       args = code.split
       immediate = args.pop
@@ -180,6 +214,11 @@ module Ioki
       names = args.map {|name| name.delete("(").strip }
 
       return names.reverse, immediate.strip
+    end
+
+    def new_label
+      @counter += 1
+      "L#{@counter}"
     end
 
     def asm
