@@ -98,11 +98,9 @@ module Ioki
     end
 
     def emit_primitive(code)
-      primitive_names, immediate = parse_primitive(code)
-      asm.movl(immediate_rep(immediate), EAX)
-      primitive_names.each do |primitive_name|
-        send(PRIMITIVES[primitive_name])
-      end
+      array = Helper.convert_sexp_to_array(code)
+      emit_expression(array[1])
+      send(PRIMITIVES[array[0]])
     end
 
     def emit_fxadd1
@@ -210,15 +208,6 @@ module Ioki
 
     def if?(code)
       code.start_with?("(if")
-    end
-
-    def parse_primitive(code)
-      args = code.split
-      immediate = args.pop
-      immediate = immediate[0,(immediate.size - args.length)]
-      names = args.map {|name| name.delete("(").strip }
-
-      return names.reverse, immediate.strip
     end
 
     def new_label

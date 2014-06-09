@@ -13,11 +13,11 @@ describe "Conditionals" do
       "(if (not (boolean? #t)) 15 (boolean? #f))" => "#t",
       "(if (if (char? #\\a) (boolean? #\\b) (fixnum? #\\c)) 119 -23)" => "-23",
       "(if (if (if (not 1) (not 2) (not 3)) 4 5) 6 7)" => "6",
-      #"(if (not (if (if (not 1) (not 2) (not 3)) 4 5)) 6 7)" => "7",
-      #"(not (if (not (if (if (not 1) (not 2) (not 3)) 4 5)) 6 7))" => "#f",
+      "(if (not (if (if (not 1) (not 2) (not 3)) 4 5)) 6 7)" => "7",
+      "(not (if (not (if (if (not 1) (not 2) (not 3)) 4 5)) 6 7))" => "#f",
       "(if (char? 12) 13 14)" => "14",
       "(if (char? #\\a) 13 14)" => "13",
-      #"(fxadd1 (if (fxsub1 1) (fxsub1 13) 14))" => "13",
+      "(fxadd1 (if (fxsub1 1) (fxsub1 13) 14))" => "13",
     }
 
     expressions.each do |code, expected|
