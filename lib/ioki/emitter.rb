@@ -16,6 +16,7 @@ module Ioki
 
     PRIMITIVES = {
       "fxadd1" => "emit_fxadd1",
+      "fxsub1" => "emit_fxsub1",
       "fixnum->char" => "emit_fixnum_to_char",
       "char->fixnum" => "emit_char_to_fixnum",
       "fixnum?" => "emit_fixnum?",
@@ -106,6 +107,10 @@ module Ioki
 
     def emit_fxadd1
       asm.addl(immediate_rep(1), EAX)
+    end
+
+    def emit_fxsub1
+      asm.subl(immediate_rep(1), EAX)
     end
 
     def emit_fixnum_to_char

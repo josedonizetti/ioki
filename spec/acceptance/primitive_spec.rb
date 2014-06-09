@@ -27,6 +27,22 @@ describe Ioki::Emitter do
     it_behaves_like "a primitive"
   end
 
+  describe "fxsub1" do
+    let(:primitives) {{
+      "(fxsub1 0)" => "-1",
+      "(fxsub1 -1)" => "-2",
+      "(fxsub1 1)" => "0",
+      "(fxsub1 -100)" => "-101",
+      "(fxsub1 1000)" => "999",
+      "(fxsub1 536870910)" => "536870909",
+      "(fxsub1 -536870911)" => "-536870912",
+      "(fxsub1 (fxsub1 0))" => "-2",
+      "(fxsub1 (fxsub1 (fxsub1 (fxsub1 (fxsub1 (fxsub1 12))))))" => "6"
+    }}
+
+    it_behaves_like "a primitive"
+  end
+
   describe "fixnum->char" do
     let(:primitives) {{
       "(fixnum->char 65)" => "#\\A",

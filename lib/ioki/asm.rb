@@ -34,6 +34,10 @@ module Ioki
       write_tabbed3("addl", src, dest)
     end
 
+    def subl(src, dest)
+      write_tabbed3("subl", src, dest)
+    end
+
     def pushl(register)
       write_tabbed2("pushl", register)
     end
