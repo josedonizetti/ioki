@@ -164,18 +164,32 @@ module Ioki
 
     # Binary Primitives
     def emit_add(params)
-      emit_expression(params[0])
-      asm.movl(EAX, ECX)
-      emit_expression(params[1])
-      asm.addl(ECX, EAX)
+      params.reverse.each do |exp|
+        emit_expression(exp)
+        asm.pushl(EAX)
+      end
+
+      asm.movl(immediate_rep(0), EAX)
+
+      params.each do
+        asm.popl(ECX)
+        asm.addl(ECX, EAX)
+      end
     end
 
     def emit_sub(params)
-      emit_expression(params[0])
-      asm.movl(EAX, ECX)
-      emit_expression(params[1])
-      asm.subl(EAX, ECX)
-      asm.movl(ECX, EAX)
+        params.reverse.each do |exp|
+            emit_expression(exp)
+            asm.pushl(EAX)
+        end
+
+        asm.popl(EAX)
+
+        params.shift
+        params.each do
+          asm.popl(ECX)
+          asm.subl(ECX, EAX)
+        end
     end
 
     # Conditionals Forms
