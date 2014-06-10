@@ -14,7 +14,7 @@ module Ioki
     BoolMask        = 0xBF
     BoolBit         = 0x6
 
-    PRIMITIVES = {
+    UNARY_PRIMITIVES = {
       "add1" => "emit_add1",
       "sub1" => "emit_sub1",
       "fixnum->char" => "emit_fixnum_to_char",
@@ -75,15 +75,15 @@ module Ioki
     def emit_expression(exp)
       case
       when immediate?(exp); asm.movl(immediate_rep(exp), EAX)
-      when primitive?(exp); emit_primitive(exp)
+      when unary_primitive?(exp); emit_unary_primitive(exp)
       when form?(exp); emit_form(exp)
       end
     end
 
-    def emit_primitive(code)
+    def emit_unary_primitive(code)
       array = Helper.convert_sexp_to_array(code)
       emit_expression(array[1])
-      send(PRIMITIVES[array[0]])
+      send(UNARY_PRIMITIVES[array[0]])
     end
 
     def emit_form(code)
@@ -92,7 +92,7 @@ module Ioki
       send(FORMS[form], args)
     end
 
-    # primitives
+    # Unary Primitives
 
     def emit_add1
       asm.addl(immediate_rep(1), EAX)
@@ -244,9 +244,9 @@ module Ioki
       false
     end
 
-    def primitive?(exp)
+    def unary_primitive?(exp)
       name = Helper.car(exp)
-      PRIMITIVES[name] != nil
+      UNARY_PRIMITIVES[name] != nil
     end
 
     def form?(exp)
