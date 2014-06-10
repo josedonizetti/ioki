@@ -84,6 +84,10 @@ module Ioki
       write_tabbed2("setle", register)
     end
 
+    def setg(register)
+      write_tabbed2("setg", register)
+    end
+
     def movzbl(src, dest)
       write_tabbed3("movzbl", src, dest)
     end
