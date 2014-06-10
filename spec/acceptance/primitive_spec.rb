@@ -398,6 +398,8 @@ describe Ioki::Emitter do
       "(if (>= 12 12) 12 13)" => "12",
       "(if (>= 13 12) 13 14)" => "13"
     }}
+
+    it_behaves_like "a primitive"
   end
 
 end
