@@ -90,6 +90,10 @@ module Ioki
       write_tabbed2("je", label)
     end
 
+    def jne(label)
+      write_tabbed2("jne", label)
+    end
+
     def jmp(label)
       write_tabbed2("jmp", label)
     end
