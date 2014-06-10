@@ -31,6 +31,7 @@ module Ioki
     BINARY_PRIMITIVES = {
       "+" => "emit_add",
       "-" => "emit_sub",
+      "*" => "emit_mul",
     }
 
     FORMS = {
@@ -190,6 +191,31 @@ module Ioki
           asm.popl(ECX)
           asm.subl(ECX, EAX)
         end
+    end
+
+    def emit_mul(params)
+      params.each do |exp|
+        emit_expression(exp)
+        asm.pushl(EAX)
+      end
+
+      asm.popl(EAX)
+
+      # remove fixnum tag
+      asm.shr(FxShift, EAX)
+
+      params.pop
+      params.each do
+        asm.popl(ECX)
+        # remove fixnum tag
+        asm.shr(FxShift, ECX)
+        
+        asm.imul(ECX, EAX)
+      end
+
+      # add fixnum tag
+      asm.shl(FxShift, EAX)
+
     end
 
     # Conditionals Forms
