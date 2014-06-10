@@ -34,6 +34,7 @@ module Ioki
       "*" => "emit_mul",
       "logor" => "emit_logor",
       "logand" => "emit_logand",
+      "=" => "emit_equal",
     }
 
     FORMS = {
@@ -236,6 +237,17 @@ module Ioki
       asm.popl(ECX)
 
       asm.or(ECX, EAX)
+    end
+
+    def emit_equal(params)
+      emit_expression(params[0])
+      asm.pushl(EAX)
+
+      emit_expression(params[1])
+      asm.popl(ECX)
+
+      asm.cmp(ECX, EAX)
+      emit_cmp_bool_result
     end
 
     # Conditionals Forms
