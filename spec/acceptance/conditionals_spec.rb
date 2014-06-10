@@ -27,7 +27,7 @@ describe "Conditionals" do
       "(not (if (not (if (if (not 1) (not 2) (not 3)) 4 5)) 6 7))" => "#f",
       "(if (char? 12) 13 14)" => "14",
       "(if (char? #\\a) 13 14)" => "13",
-      "(fxadd1 (if (fxsub1 1) (fxsub1 13) 14))" => "13",
+      "(add1 (if (sub1 1) (sub1 13) 14))" => "13",
     }}
 
     it_behaves_like "a form"

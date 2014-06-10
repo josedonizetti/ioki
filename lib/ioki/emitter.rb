@@ -15,17 +15,17 @@ module Ioki
     BoolBit         = 0x6
 
     PRIMITIVES = {
-      "fxadd1" => "emit_fxadd1",
-      "fxsub1" => "emit_fxsub1",
+      "add1" => "emit_add1",
+      "sub1" => "emit_sub1",
       "fixnum->char" => "emit_fixnum_to_char",
       "char->fixnum" => "emit_char_to_fixnum",
       "fixnum?" => "emit_fixnum?",
-      "fxzero?" => "emit_fxzero?",
+      "zero?" => "emit_zero?",
       "null?" => "emit_null?",
       "boolean?" => "emit_boolean?",
       "char?" => "emit_char?",
       "not" => "emit_not",
-      "fxlognot" => "emit_fxlognot"
+      "lognot" => "emit_lognot"
     }
 
     FORMS = {
@@ -94,11 +94,11 @@ module Ioki
 
     # primitives
 
-    def emit_fxadd1
+    def emit_add1
       asm.addl(immediate_rep(1), EAX)
     end
 
-    def emit_fxsub1
+    def emit_sub1
       asm.subl(immediate_rep(1), EAX)
     end
 
@@ -117,7 +117,7 @@ module Ioki
       emit_cmp_bool_result
     end
 
-    def emit_fxzero?
+    def emit_zero?
       asm.cmp(0, EAX)
       emit_cmp_bool_result
     end
@@ -144,7 +144,7 @@ module Ioki
       emit_cmp_bool_result
     end
 
-    def emit_fxlognot
+    def emit_lognot
       asm.shr(FxShift, EAX)
       asm.not(EAX)
       asm.shl(FxShift, EAX)

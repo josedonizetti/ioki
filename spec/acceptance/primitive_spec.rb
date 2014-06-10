@@ -11,33 +11,33 @@ describe Ioki::Emitter do
     end
   end
 
-  describe "fxadd1" do
+  describe "add1" do
     let(:primitives) {{
-      "(fxadd1 0)" => "1",
-      "(fxadd1 -1)" => "0",
-      "(fxadd1 1)" => "2",
-      "(fxadd1 -100)" => "-99",
-      "(fxadd1 1000)" => "1001",
-      "(fxadd1 536870910)" => "536870911",
-      "(fxadd1 -536870912)" => "-536870911",
-      "(fxadd1 (fxadd1 0))" => "2",
-      "(fxadd1 (fxadd1 (fxadd1 (fxadd1 (fxadd1 (fxadd1 12))))))" => "18"
+      "(add1 0)" => "1",
+      "(add1 -1)" => "0",
+      "(add1 1)" => "2",
+      "(add1 -100)" => "-99",
+      "(add1 1000)" => "1001",
+      "(add1 536870910)" => "536870911",
+      "(add1 -536870912)" => "-536870911",
+      "(add1 (add1 0))" => "2",
+      "(add1 (add1 (add1 (add1 (add1 (add1 12))))))" => "18"
     }}
 
     it_behaves_like "a primitive"
   end
 
-  describe "fxsub1" do
+  describe "sub1" do
     let(:primitives) {{
-      "(fxsub1 0)" => "-1",
-      "(fxsub1 -1)" => "-2",
-      "(fxsub1 1)" => "0",
-      "(fxsub1 -100)" => "-101",
-      "(fxsub1 1000)" => "999",
-      "(fxsub1 536870910)" => "536870909",
-      "(fxsub1 -536870911)" => "-536870912",
-      "(fxsub1 (fxsub1 0))" => "-2",
-      "(fxsub1 (fxsub1 (fxsub1 (fxsub1 (fxsub1 (fxsub1 12))))))" => "6"
+      "(sub1 0)" => "-1",
+      "(sub1 -1)" => "-2",
+      "(sub1 1)" => "0",
+      "(sub1 -100)" => "-101",
+      "(sub1 1000)" => "999",
+      "(sub1 536870910)" => "536870909",
+      "(sub1 -536870911)" => "-536870912",
+      "(sub1 (sub1 0))" => "-2",
+      "(sub1 (sub1 (sub1 (sub1 (sub1 (sub1 12))))))" => "6"
     }}
 
     it_behaves_like "a primitive"
@@ -102,11 +102,11 @@ describe Ioki::Emitter do
      it_behaves_like "a primitive"
   end
 
-  describe "fxzero?" do
+  describe "zero?" do
     let(:primitives) {{
-      "(fxzero? 0)" => "#t",
-      "(fxzero? 1)" => "#f",
-      "(fxzero? -1)" => "#f"
+      "(zero? 0)" => "#t",
+      "(zero? 1)" => "#f",
+      "(zero? -1)" => "#f"
     }}
 
     it_behaves_like "a primitive"
@@ -177,18 +177,18 @@ describe Ioki::Emitter do
     it_behaves_like "a primitive"
   end
 
-  describe "fxlognot" do
+  describe "lognot" do
     let(:primitives) {{
-      "(fxlognot 0)" => "-1",
-      "(fxlognot -1)" => "0",
-      "(fxlognot 1)" => "-2",
-      "(fxlognot -2)" => "1",
-      "(fxlognot 536870911)" => "-536870912",
-      "(fxlognot -536870912)" => "536870911",
-      "(fxlognot (fxlognot 237463))" => "237463"
+      "(lognot 0)" => "-1",
+      "(lognot -1)" => "0",
+      "(lognot 1)" => "-2",
+      "(lognot -2)" => "1",
+      "(lognot 536870911)" => "-536870912",
+      "(lognot -536870912)" => "536870911",
+      "(lognot (lognot 237463))" => "237463"
     }}
 
     it_behaves_like "a primitive"
   end
-  
+
 end
