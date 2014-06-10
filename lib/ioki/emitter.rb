@@ -35,6 +35,7 @@ module Ioki
       "logor" => "emit_logor",
       "logand" => "emit_logand",
       "=" => "emit_equal",
+      "<" => "emit_less_than",
     }
 
     FORMS = {
@@ -254,6 +255,18 @@ module Ioki
 
       asm.cmp(ECX, EAX)
       asm.sete(AL)
+      emit_cmp_bool_result
+    end
+
+    def emit_less_than(params)
+      emit_expression(params[0])
+      asm.pushl(EAX)
+
+      emit_expression(params[1])
+      asm.popl(ECX)
+
+      asm.cmp(EAX, ECX)
+      asm.setl(AL)
       emit_cmp_bool_result
     end
 
