@@ -206,4 +206,18 @@ describe Ioki::Emitter do
     it_behaves_like "a primitive"
   end
 
+  describe "-" do
+    let(:primitives) {{
+      "(- 0 100)" => "-100",
+      "(- 1 1)" => "0",
+      "(- 1 15)" => "-14",
+      "(- -2 3)" => "-5",
+      "(- 536870901 1)" => "536870900",
+      "(- -536870910 1)" => "-536870911",
+      "(- (+ 237463 10) 100)" => "237373"
+    }}
+
+    it_behaves_like "a primitive"
+  end
+
 end

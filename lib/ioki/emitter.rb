@@ -29,7 +29,8 @@ module Ioki
     }
 
     BINARY_PRIMITIVES = {
-      "+" => "emit_add"
+      "+" => "emit_add",
+      "-" => "emit_sub",
     }
 
     FORMS = {
@@ -167,6 +168,14 @@ module Ioki
       asm.movl(EAX, ECX)
       emit_expression(params[1])
       asm.addl(ECX, EAX)
+    end
+
+    def emit_sub(params)
+      emit_expression(params[0])
+      asm.movl(EAX, ECX)
+      emit_expression(params[1])
+      asm.subl(EAX, ECX)
+      asm.movl(ECX, EAX)
     end
 
     # Conditionals Forms
