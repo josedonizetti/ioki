@@ -38,6 +38,7 @@ module Ioki
       "<" => "emit_less_than",
       "<=" => "emit_less_than_or_equal",
       ">" => "emit_greater_than",
+      ">=" => "emit_greater_than_or_equal",
     }
 
     FORMS = {
@@ -293,6 +294,18 @@ module Ioki
 
       asm.cmp(EAX, ECX)
       asm.setg(AL)
+      emit_cmp_bool_result
+    end
+
+    def emit_greater_than_or_equal(params)
+      emit_expression(params[0])
+      asm.pushl(EAX)
+
+      emit_expression(params[1])
+      asm.popl(ECX)
+
+      asm.cmp(EAX, ECX)
+      asm.setge(AL)
       emit_cmp_bool_result
     end
 
