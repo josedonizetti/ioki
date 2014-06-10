@@ -162,14 +162,13 @@ module Ioki
     end
 
     def emit_and(exp)
-      exp = exp[1, exp.length - 2]
-      args = exp.split
+      args = Helper.convert_sexp_to_array(exp)
       args.shift
 
       label = new_label
 
-      args.each do |immediate|
-        emit_expression(immediate)
+      args.each do |exp|
+        emit_expression(exp)
         asm.cmp(FalseValue, AL)
         asm.je(label)
       end
@@ -178,14 +177,13 @@ module Ioki
     end
 
     def emit_or(exp)
-      exp = exp[1, exp.length - 2]
-      args = exp.split
+      args = Helper.convert_sexp_to_array(exp)
       args.shift
 
       label = new_label
 
-      args.each do |immediate|
-        emit_expression(immediate)
+      args.each do |exp|
+        emit_expression(exp)
         asm.cmp(FalseValue, AL)
         asm.jne(label)
       end

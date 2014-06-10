@@ -190,41 +190,5 @@ describe Ioki::Emitter do
 
     it_behaves_like "a primitive"
   end
-
-  describe "and" do
-    let(:primitives) {{
-      "(and #t)" => "#t",
-      "(and #f)" => "#f",
-      "(and #t #t)" => "#t",
-      "(and #f #f)" => "#f",
-      "(and #t #f)" => "#f",
-      "(and #f #t)" => "#f",
-      "(and 0 1)" => "1",
-      "(and 0 #f 1)" => "#f",
-      "(and #f #t 1)" => "#f",
-      "(and 0 1 2 3 4 5 #t)" => "#t",
-      "(and #t 0 1 2 3 4 5)" => "5",
-    }}
-
-    it_behaves_like "a primitive"
-  end
-
-  describe "or" do
-    let(:primitives) {{
-      "(or #t)" => "#t",
-      "(or #f)" => "#f",
-      "(or #t #t)" => "#t",
-      "(or #f #f)" => "#f",
-      "(or #t #f)" => "#t",
-      "(or #f #t)" => "#t",
-      "(or 0 1)" => "0",
-      "(or 0 #f 1)" => "0",
-      "(or #f #t 1)" => "#t",
-      "(or 0 1 2 3 4 5 #t)" => "0",
-      "(or #t 0 1 2 3 4 5)" => "#t",
-    }}
-
-    it_behaves_like "a primitive"
-  end
-
+  
 end
