@@ -32,6 +32,8 @@ module Ioki
       "+" => "emit_add",
       "-" => "emit_sub",
       "*" => "emit_mul",
+      "logor" => "emit_logor",
+      "logand" => "emit_logand",
     }
 
     FORMS = {
@@ -209,13 +211,31 @@ module Ioki
         asm.popl(ECX)
         # remove fixnum tag
         asm.shr(FxShift, ECX)
-        
         asm.imul(ECX, EAX)
       end
 
       # add fixnum tag
       asm.shl(FxShift, EAX)
+    end
 
+    def emit_logand(params)
+      emit_expression(params[0])
+      asm.pushl(EAX)
+
+      emit_expression(params[1])
+      asm.popl(ECX)
+
+      asm.and(ECX, EAX)
+    end
+
+    def emit_logor(params)
+      emit_expression(params[0])
+      asm.pushl(EAX)
+
+      emit_expression(params[1])
+      asm.popl(ECX)
+
+      asm.or(ECX, EAX)
     end
 
     # Conditionals Forms

@@ -300,6 +300,8 @@ describe Ioki::Emitter do
       "(logand (lognot 2346) 2346)" => "0",
       "(logand 2376 2376)" => "2376",
     }}
+
+    it_behaves_like "a primitive"
   end
 
   describe "=" do
