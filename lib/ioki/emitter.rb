@@ -130,33 +130,39 @@ module Ioki
     def emit_fixnum?
       asm.and(FxMask, AL)
       asm.cmp(FxTag, AL)
+      asm.sete(AL)
       emit_cmp_bool_result
     end
 
     def emit_zero?
       asm.cmp(0, EAX)
+      asm.sete(AL)
       emit_cmp_bool_result
     end
 
     def emit_null?
       asm.cmp(EmptyListValue, EAX)
+      asm.sete(AL)
       emit_cmp_bool_result
     end
 
     def emit_boolean?
       asm.and(BoolMask, AL)
       asm.cmp(FalseValue, AL)
+      asm.sete(AL)
       emit_cmp_bool_result
     end
 
     def emit_char?
       asm.and(CharMask, AL)
       asm.cmp(CharTag, AL)
+      asm.sete(AL)
       emit_cmp_bool_result
     end
 
     def emit_not
       asm.cmp(FalseValue,AL)
+      asm.sete(AL)
       emit_cmp_bool_result
     end
 
@@ -247,6 +253,7 @@ module Ioki
       asm.popl(ECX)
 
       asm.cmp(ECX, EAX)
+      asm.sete(AL)
       emit_cmp_bool_result
     end
 
@@ -300,7 +307,6 @@ module Ioki
     private
 
     def emit_cmp_bool_result
-      asm.sete(AL)
       asm.movzbl(AL, EAX)
       asm.sal(BoolBit, AL)
       asm.or(FalseValue, AL)
