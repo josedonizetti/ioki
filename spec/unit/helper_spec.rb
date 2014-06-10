@@ -17,4 +17,17 @@ describe Helper do
       expect(got).to eq(expected)
     end
   end
+
+  it "should return car" do
+    expressions = {
+      "(if #t 12 13)" => "if",
+      "(fxadd1 43)" => "fxadd1",
+      "(boolean? #f)" => "boolean?",
+      "(not (boolean? #t))" => "not",
+    }
+    expressions.each do |sexp, expected|
+      got = Helper.car(sexp)
+      expect(got).to eq(expected)
+    end
+  end
 end

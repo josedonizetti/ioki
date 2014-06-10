@@ -27,4 +27,10 @@ module Helper
     array
   end
   module_function :convert_sexp_to_array
+
+  def car(exp)
+    exp[1, exp.size - 2].split[0]
+  end
+
+  module_function :car
 end

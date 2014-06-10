@@ -28,6 +28,12 @@ module Ioki
       "fxlognot" => "emit_fxlognot"
     }
 
+    FORMS = {
+      "if" => "emit_if",
+      "or" => "emit_or",
+      "and" => "emit_and",
+    }
+
     def initialize(file_name)
       @asm = Asm.new(file_name)
       @counter = 0
@@ -66,36 +72,11 @@ module Ioki
       asm.close
     end
 
-    def emit_if(code)
-      array = Helper.convert_sexp_to_array(code)
-
-      exp1 = array[1]
-      exp2 = array[2]
-      exp3 = array[3]
-
-      label1 = new_label
-      label2 = new_label
-
-      emit_expression(exp1)
-      asm.cmp(FalseValue, AL)
-
-      asm.je(label1)
-      emit_expression(exp2)
-      asm.jmp(label2)
-
-      asm.label(label1)
-      emit_expression(exp3)
-
-      asm.label(label2)
-    end
-
     def emit_expression(exp)
       case
       when immediate?(exp); asm.movl(immediate_rep(exp), EAX)
-      when if?(exp); emit_if(exp)
-      when and?(exp); emit_and(exp)
-      when or?(exp); emit_or(exp)
-      else; emit_primitive(exp)
+      when primitive?(exp); emit_primitive(exp)
+      when form?(exp); emit_form(exp)
       end
     end
 
@@ -104,6 +85,14 @@ module Ioki
       emit_expression(array[1])
       send(PRIMITIVES[array[0]])
     end
+
+    def emit_form(code)
+      args = Helper.convert_sexp_to_array(code)
+      form = args.shift
+      send(FORMS[form], args)
+    end
+
+    # primitives
 
     def emit_fxadd1
       asm.addl(immediate_rep(1), EAX)
@@ -161,13 +150,33 @@ module Ioki
       asm.shl(FxShift, EAX)
     end
 
-    def emit_and(exp)
-      args = Helper.convert_sexp_to_array(exp)
-      args.shift
+    # Conditionals Forms
 
+    def emit_if(params)
+      exp1 = params[0]
+      exp2 = params[1]
+      exp3 = params[2]
+
+      label1 = new_label
+      label2 = new_label
+
+      emit_expression(exp1)
+      asm.cmp(FalseValue, AL)
+
+      asm.je(label1)
+      emit_expression(exp2)
+      asm.jmp(label2)
+
+      asm.label(label1)
+      emit_expression(exp3)
+
+      asm.label(label2)
+    end
+
+    def emit_and(params)
       label = new_label
 
-      args.each do |exp|
+      params.each do |exp|
         emit_expression(exp)
         asm.cmp(FalseValue, AL)
         asm.je(label)
@@ -176,13 +185,10 @@ module Ioki
       asm.label(label)
     end
 
-    def emit_or(exp)
-      args = Helper.convert_sexp_to_array(exp)
-      args.shift
-
+    def emit_or(params)
       label = new_label
 
-      args.each do |exp|
+      params.each do |exp|
         emit_expression(exp)
         asm.cmp(FalseValue, AL)
         asm.jne(label)
@@ -238,16 +244,14 @@ module Ioki
       false
     end
 
-    def if?(code)
-      code.start_with?("(if")
+    def primitive?(exp)
+      name = Helper.car(exp)
+      PRIMITIVES[name] != nil
     end
 
-    def and?(code)
-      code.start_with?("(and")
-    end
-
-    def or?(code)
-      code.start_with?("(or")
+    def form?(exp)
+      name = Helper.car(exp)
+      FORMS[name] != nil
     end
 
     def new_label
