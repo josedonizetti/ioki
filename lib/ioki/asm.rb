@@ -3,6 +3,7 @@ module Ioki
   EBP = "%ebp"
   ESP = "%esp"
   EAX = "%eax"
+  ECX = "%ecx"
   AL = "%al"
 
   class Asm

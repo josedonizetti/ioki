@@ -28,6 +28,10 @@ module Ioki
       "lognot" => "emit_lognot"
     }
 
+    BINARY_PRIMITIVES = {
+      "+" => "emit_add"
+    }
+
     FORMS = {
       "if" => "emit_if",
       "or" => "emit_or",
@@ -76,6 +80,7 @@ module Ioki
       case
       when immediate?(exp); asm.movl(immediate_rep(exp), EAX)
       when unary_primitive?(exp); emit_unary_primitive(exp)
+      when binary_primitive?(exp); emit_binary_primitive(exp)
       when form?(exp); emit_form(exp)
       end
     end
@@ -84,6 +89,12 @@ module Ioki
       array = Helper.convert_sexp_to_array(code)
       emit_expression(array[1])
       send(UNARY_PRIMITIVES[array[0]])
+    end
+
+    def emit_binary_primitive(code)
+      args = Helper.convert_sexp_to_array(code)
+      name = args.shift
+      send(BINARY_PRIMITIVES[name], args)
     end
 
     def emit_form(code)
@@ -148,6 +159,14 @@ module Ioki
       asm.shr(FxShift, EAX)
       asm.not(EAX)
       asm.shl(FxShift, EAX)
+    end
+
+    # Binary Primitives
+    def emit_add(params)
+      emit_expression(params[0])
+      asm.movl(EAX, ECX)
+      emit_expression(params[1])
+      asm.addl(ECX, EAX)
     end
 
     # Conditionals Forms
@@ -247,6 +266,11 @@ module Ioki
     def unary_primitive?(exp)
       name = Helper.car(exp)
       UNARY_PRIMITIVES[name] != nil
+    end
+
+    def binary_primitive?(exp)
+      name = Helper.car(exp)
+      BINARY_PRIMITIVES[name] != nil
     end
 
     def form?(exp)
