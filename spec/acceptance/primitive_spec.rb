@@ -345,6 +345,8 @@ describe Ioki::Emitter do
       "(<= (+ 13 3) 16)" => "#t",
       "(<= (+ 13 13) 16)" => "#f"
     }}
+
+    it_behaves_like "a primitive"
   end
 
   describe ">" do
