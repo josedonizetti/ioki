@@ -283,4 +283,20 @@ describe Ioki::Emitter do
     }}
   end
 
+
+  describe "logand and logor" do
+    let(:primitives) {{
+      "(logor 3 16)" => "19",
+      "(logor 3 5)"  => "7",
+      "(logor 3 7)"  => "7",
+      "(lognot (logor (lognot 7) 1))" => "6",
+      "(lognot (logor 1 (lognot 7)))" => "6",
+      "(logand 3 7)" => "3",
+      "(logand 3 5)" => "1",
+      "(logand 2346 (lognot 2346))" => "0",
+      "(logand (lognot 2346) 2346)" => "0",
+      "(logand 2376 2376)" => "2376",
+    }}
+  end
+
 end
