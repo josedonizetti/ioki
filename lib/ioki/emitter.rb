@@ -93,6 +93,7 @@ module Ioki
       case
       when immediate?(exp); asm.movl(immediate_rep(exp), EAX)
       when if?(exp); emit_if(exp)
+      when and?(exp); emit_and(exp)
       else; emit_primitive(exp)
       end
     end
@@ -159,6 +160,22 @@ module Ioki
       asm.shl(FxShift, EAX)
     end
 
+    def emit_and(exp)
+      exp = exp[1, exp.length - 2]
+      args = exp.split
+      args.shift
+
+      label = new_label
+
+      args.each do |immediate|
+        emit_expression(immediate)
+        asm.cmp(FalseValue, AL)
+        asm.je(label)
+      end
+
+      asm.label(label)
+    end
+
     private
 
     def emit_cmp_bool_result
@@ -208,6 +225,10 @@ module Ioki
 
     def if?(code)
       code.start_with?("(if")
+    end
+
+    def and?(code)
+      code.start_with?("(and")
     end
 
     def new_label
