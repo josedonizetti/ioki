@@ -30,4 +30,18 @@ describe Helper do
       expect(got).to eq(expected)
     end
   end
+
+  it "should convert let bindins para array" do
+    let_body = {
+      "([x 5])" => ["x", "5"],
+      "([x (+ 1 2)])" => ["x", "(+ 1 2)"],
+      "([x (+ 1 2) y 3])" => ["x", "(+ 1 2)", "y", "3"],
+      "([x (+ 1 2) y (+ 3 4)])" => ["x", "(+ 1 2)", "y", "(+ 3 4)"]
+    }
+
+    let_body.each do |body, expected|
+      got = Helper.convert_bindings_to_array(body)
+      expect(got).to eq(expected)
+    end
+  end
 end

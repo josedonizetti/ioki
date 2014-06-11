@@ -45,6 +45,7 @@ module Ioki
       "if" => "emit_if",
       "or" => "emit_or",
       "and" => "emit_and",
+      "let" => "emit_let",
     }
 
     def initialize(file_name)
@@ -52,12 +53,57 @@ module Ioki
       @counter = 0
     end
 
-    def immediate?(code)
-      return true if fixnum?(code) || boolean?(code) || empty_list?(code) || char?(code)
-      return false
+    def emit_program(exp)
+      asm.section
+      asm.globl("_scheme_entry")
+      asm.declare_function("_scheme_entry:")
+      asm.pushl(EBP)
+      asm.movl(ESP, EBP)
+
+      env = {}
+      @reference_pointer = 0
+      emit_expression(exp, env)
+
+      asm.addl(@reference_pointer, ESP) if @reference_pointer != 0
+      asm.popl(EBP)
+      asm.ret
+      asm.close
     end
 
-    def immediate_rep(immediate)
+    def emit_expression(exp, env)
+      case
+      when var?(exp, env); emit_var(exp, env)
+      when immediate?(exp); asm.movl(immediate_rep(exp, env), EAX)
+      when unary_primitive?(exp); emit_unary_primitive(exp, env)
+      when binary_primitive?(exp); emit_binary_primitive(exp, env)
+      when form?(exp); emit_form(exp, env)
+      end
+    end
+
+    def emit_unary_primitive(exp, env)
+      array = Helper.convert_sexp_to_array(exp)
+      emit_expression(array[1], env)
+      send(UNARY_PRIMITIVES[array[0]], env)
+    end
+
+    def emit_binary_primitive(exp, env)
+      args = Helper.convert_sexp_to_array(exp)
+      name = args.shift
+      send(BINARY_PRIMITIVES[name], args, env)
+    end
+
+    def emit_form(exp, env)
+      args = Helper.convert_sexp_to_array(exp)
+      form = args.shift
+      send(FORMS[form], args, env)
+    end
+
+    def emit_var(exp, env)
+      val = env[exp]
+      asm.movl("-#{val}(%ebp)", EAX)
+    end
+
+    def immediate_rep(immediate, env)
       case
       when boolean?(immediate)
         return immediate == "#t" ? TrueValue : FalseValue
@@ -71,119 +117,78 @@ module Ioki
       end
     end
 
-    def emit_program(code)
-      asm.section
-      asm.globl("_scheme_entry")
-      asm.declare_function("_scheme_entry:")
-      asm.pushl(EBP)
-      asm.movl(ESP, EBP)
-
-      emit_expression(code)
-
-      asm.popl(EBP)
-      asm.ret
-      asm.close
-    end
-
-    def emit_expression(exp)
-      case
-      when immediate?(exp); asm.movl(immediate_rep(exp), EAX)
-      when unary_primitive?(exp); emit_unary_primitive(exp)
-      when binary_primitive?(exp); emit_binary_primitive(exp)
-      when form?(exp); emit_form(exp)
-      end
-    end
-
-    def emit_unary_primitive(code)
-      array = Helper.convert_sexp_to_array(code)
-      emit_expression(array[1])
-      send(UNARY_PRIMITIVES[array[0]])
-    end
-
-    def emit_binary_primitive(code)
-      args = Helper.convert_sexp_to_array(code)
-      name = args.shift
-      send(BINARY_PRIMITIVES[name], args)
-    end
-
-    def emit_form(code)
-      args = Helper.convert_sexp_to_array(code)
-      form = args.shift
-      send(FORMS[form], args)
-    end
-
     # Unary Primitives
 
-    def emit_add1
-      asm.addl(immediate_rep(1), EAX)
+    def emit_add1(env)
+      asm.addl(immediate_rep(1, env), EAX)
     end
 
-    def emit_sub1
-      asm.subl(immediate_rep(1), EAX)
+    def emit_sub1(env)
+      asm.subl(immediate_rep(1, env), EAX)
     end
 
-    def emit_fixnum_to_char
+    def emit_fixnum_to_char(env)
       asm.shl(CharShift - FxShift, EAX)
       asm.or(CharMask, EAX)
     end
 
-    def emit_char_to_fixnum
+    def emit_char_to_fixnum(env)
       asm.shr(CharShift - FxShift, EAX)
     end
 
-    def emit_fixnum?
+    def emit_fixnum?(env)
       asm.and(FxMask, AL)
       asm.cmp(FxTag, AL)
       asm.sete(AL)
       emit_cmp_bool_result
     end
 
-    def emit_zero?
+    def emit_zero?(env)
       asm.cmp(0, EAX)
       asm.sete(AL)
       emit_cmp_bool_result
     end
 
-    def emit_null?
+    def emit_null?(env)
       asm.cmp(EmptyListValue, EAX)
       asm.sete(AL)
       emit_cmp_bool_result
     end
 
-    def emit_boolean?
+    def emit_boolean?(env)
       asm.and(BoolMask, AL)
       asm.cmp(FalseValue, AL)
       asm.sete(AL)
       emit_cmp_bool_result
     end
 
-    def emit_char?
+    def emit_char?(env)
       asm.and(CharMask, AL)
       asm.cmp(CharTag, AL)
       asm.sete(AL)
       emit_cmp_bool_result
     end
 
-    def emit_not
+    def emit_not(env)
       asm.cmp(FalseValue,AL)
       asm.sete(AL)
       emit_cmp_bool_result
     end
 
-    def emit_lognot
+    def emit_lognot(env)
       asm.shr(FxShift, EAX)
       asm.not(EAX)
       asm.shl(FxShift, EAX)
     end
 
     # Binary Primitives
-    def emit_add(params)
+    def emit_add(params, env)
       params.reverse.each do |exp|
-        emit_expression(exp)
+        emit_expression(exp, env)
         asm.pushl(EAX)
       end
 
-      asm.movl(immediate_rep(0), EAX)
+      asm.movl(immediate_rep(0, env), EAX)
 
       params.each do
         asm.popl(ECX)
@@ -191,9 +196,9 @@ module Ioki
       end
     end
 
-    def emit_sub(params)
+    def emit_sub(params, env)
         params.reverse.each do |exp|
-            emit_expression(exp)
+            emit_expression(exp, env)
             asm.pushl(EAX)
         end
 
@@ -206,9 +211,9 @@ module Ioki
         end
     end
 
-    def emit_mul(params)
+    def emit_mul(params, env)
       params.each do |exp|
-        emit_expression(exp)
+        emit_expression(exp, env)
         asm.pushl(EAX)
       end
 
@@ -229,31 +234,31 @@ module Ioki
       asm.shl(FxShift, EAX)
     end
 
-    def emit_logand(params)
-      emit_expression(params[0])
+    def emit_logand(params, env)
+      emit_expression(params[0], env)
       asm.pushl(EAX)
 
-      emit_expression(params[1])
+      emit_expression(params[1], env)
       asm.popl(ECX)
 
       asm.and(ECX, EAX)
     end
 
-    def emit_logor(params)
-      emit_expression(params[0])
+    def emit_logor(params, env)
+      emit_expression(params[0], env)
       asm.pushl(EAX)
 
-      emit_expression(params[1])
+      emit_expression(params[1], env)
       asm.popl(ECX)
 
       asm.or(ECX, EAX)
     end
 
-    def emit_equal(params)
-      emit_expression(params[0])
+    def emit_equal(params, env)
+      emit_expression(params[0], env)
       asm.pushl(EAX)
 
-      emit_expression(params[1])
+      emit_expression(params[1], env)
       asm.popl(ECX)
 
       asm.cmp(ECX, EAX)
@@ -261,11 +266,11 @@ module Ioki
       emit_cmp_bool_result
     end
 
-    def emit_less_than(params)
-      emit_expression(params[0])
+    def emit_less_than(params, env)
+      emit_expression(params[0], env)
       asm.pushl(EAX)
 
-      emit_expression(params[1])
+      emit_expression(params[1], env)
       asm.popl(ECX)
 
       asm.cmp(EAX, ECX)
@@ -273,11 +278,11 @@ module Ioki
       emit_cmp_bool_result
     end
 
-    def emit_less_than_or_equal(params)
-      emit_expression(params[0])
+    def emit_less_than_or_equal(params, env)
+      emit_expression(params[0], env)
       asm.pushl(EAX)
 
-      emit_expression(params[1])
+      emit_expression(params[1], env)
       asm.popl(ECX)
 
       asm.cmp(EAX, ECX)
@@ -285,11 +290,11 @@ module Ioki
       emit_cmp_bool_result
     end
 
-    def emit_greater_than(params)
-      emit_expression(params[0])
+    def emit_greater_than(params, env)
+      emit_expression(params[0], env)
       asm.pushl(EAX)
 
-      emit_expression(params[1])
+      emit_expression(params[1], env)
       asm.popl(ECX)
 
       asm.cmp(EAX, ECX)
@@ -297,11 +302,11 @@ module Ioki
       emit_cmp_bool_result
     end
 
-    def emit_greater_than_or_equal(params)
-      emit_expression(params[0])
+    def emit_greater_than_or_equal(params, env)
+      emit_expression(params[0], env)
       asm.pushl(EAX)
 
-      emit_expression(params[1])
+      emit_expression(params[1], env)
       asm.popl(ECX)
 
       asm.cmp(EAX, ECX)
@@ -311,7 +316,7 @@ module Ioki
 
     # Conditionals Forms
 
-    def emit_if(params)
+    def emit_if(params, env)
       exp1 = params[0]
       exp2 = params[1]
       exp3 = params[2]
@@ -319,24 +324,24 @@ module Ioki
       label1 = new_label
       label2 = new_label
 
-      emit_expression(exp1)
+      emit_expression(exp1, env)
       asm.cmp(FalseValue, AL)
 
       asm.je(label1)
-      emit_expression(exp2)
+      emit_expression(exp2, env)
       asm.jmp(label2)
 
       asm.label(label1)
-      emit_expression(exp3)
+      emit_expression(exp3, env)
 
       asm.label(label2)
     end
 
-    def emit_and(params)
+    def emit_and(params, env)
       label = new_label
 
       params.each do |exp|
-        emit_expression(exp)
+        emit_expression(exp, env)
         asm.cmp(FalseValue, AL)
         asm.je(label)
       end
@@ -344,16 +349,29 @@ module Ioki
       asm.label(label)
     end
 
-    def emit_or(params)
+    def emit_or(params, env)
       label = new_label
 
       params.each do |exp|
-        emit_expression(exp)
+        emit_expression(exp, env)
         asm.cmp(FalseValue, AL)
         asm.jne(label)
       end
 
       asm.label(label)
+    end
+
+    def emit_let(params, env)
+      args = Helper.convert_bindings_to_array(params[0])
+      bindings = Hash[*args]
+
+      bindings.each do |var, value|
+        emit_expression(value, env)
+        asm.pushl(EAX)
+        env[var] = inc_reference_pointer
+      end
+
+      emit_expression(params[1], env)
     end
 
     private
@@ -362,6 +380,11 @@ module Ioki
       asm.movzbl(AL, EAX)
       asm.sal(BoolBit, AL)
       asm.or(FalseValue, AL)
+    end
+
+    def immediate?(code)
+      return true if fixnum?(code) || boolean?(code) || empty_list?(code) || char?(code)
+      return false
     end
 
     def fixnumBits
@@ -417,9 +440,17 @@ module Ioki
       FORMS[name] != nil
     end
 
+    def var?(exp, env)
+      env[exp] != nil
+    end
+
     def new_label
       @counter += 1
       "L#{@counter}"
+    end
+
+    def inc_reference_pointer
+      @reference_pointer += 4
     end
 
     def asm
