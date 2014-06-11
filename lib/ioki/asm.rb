@@ -25,7 +25,11 @@ module Ioki
     end
 
     def declare_function(name)
-      write(name)
+      write("#{name}:")
+    end
+
+    def call(label)
+      write_tabbed2("call", label)
     end
 
     def movl(src, dest)

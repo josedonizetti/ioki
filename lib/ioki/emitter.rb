@@ -56,18 +56,30 @@ module Ioki
     def emit_program(exp)
       asm.section
       asm.globl("_scheme_entry")
-      asm.declare_function("_scheme_entry:")
+      asm.declare_function("_scheme_entry")
+      asm.pushl(EBP)
+      asm.movl(ESP, EBP)
+      asm.call("L_scheme_entry")
+      asm.popl(EBP)
+      asm.ret
+
+      emit_scheme_entry(exp)
+
+      asm.close
+    end
+
+    def emit_scheme_entry(exp)
+      asm.declare_function("L_scheme_entry")
       asm.pushl(EBP)
       asm.movl(ESP, EBP)
 
       env = Env.new(nil)
       @reference_pointer = 0
       emit_expression(exp, env)
-
       asm.addl(@reference_pointer, ESP) if @reference_pointer != 0
+
       asm.popl(EBP)
       asm.ret
-      asm.close
     end
 
     def emit_expression(exp, env)
