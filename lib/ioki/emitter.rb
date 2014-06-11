@@ -69,13 +69,42 @@ module Ioki
     end
 
     def emit_scheme_entry(exp)
+      env = Env.new(nil)
+      body = exp
+
+      if letrec?(exp)
+        args = Helper.convert_sexp_to_array(exp)
+
+        args.shift
+        bindings = args[0]
+        body = args[1]
+
+        if bindings != "()"
+          reversed_array = []
+          array = Helper.convert_bindings_to_array(bindings)
+          (array.size/2).times do
+            exp = array.pop
+            name = array.pop
+            reversed_array.push(name)
+            reversed_array.push(exp)
+          end
+
+          lambdas = Hash[*reversed_array]
+
+          lambdas.each do |name, code|
+            label = new_label
+            env.add_lambda(name, label)
+            emit_lambda(label, code, env)
+          end
+        end
+      end
+
       asm.declare_function("L_scheme_entry")
       asm.pushl(EBP)
       asm.movl(ESP, EBP)
 
-      env = Env.new(nil)
       @reference_pointer = 0
-      emit_expression(exp, env)
+      emit_expression(body, env)
       asm.addl(@reference_pointer, ESP) if @reference_pointer != 0
 
       asm.popl(EBP)
@@ -84,11 +113,12 @@ module Ioki
 
     def emit_expression(exp, env)
       case
-      when env.contain?(exp); emit_var(exp, env)
+      when env.variable?(exp); emit_var(exp, env)
       when immediate?(exp); asm.movl(immediate_rep(exp, env), EAX)
       when unary_primitive?(exp); emit_unary_primitive(exp, env)
       when binary_primitive?(exp); emit_binary_primitive(exp, env)
       when form?(exp); emit_form(exp, env)
+      when lambda_call?(exp, env); emit_lambda_call(exp, env)
       end
     end
 
@@ -111,8 +141,49 @@ module Ioki
     end
 
     def emit_var(exp, env)
-      val = env[exp]
-      asm.movl("-#{val}(%ebp)", EAX)
+      val = env.get_variable(exp)
+      asm.movl("#{val}(%ebp)", EAX)
+    end
+
+    def emit_lambda(label, code, env)
+      local_scope = Env.new(env)
+      reference_pointer = 8
+
+      args = Helper.convert_sexp_to_array(code)
+      args.shift
+
+      params = args[0].delete("()").split
+      params.map!(&:chomp)
+
+      body = args[1]
+
+      params.each do |p|
+        local_scope.add_variable(p, reference_pointer)
+        reference_pointer += 4
+      end
+
+      asm.declare_function(label)
+      asm.pushl(EBP)
+      asm.movl(ESP, EBP)
+
+
+      emit_expression(body, local_scope)
+
+      asm.popl(EBP)
+      asm.ret
+    end
+
+    def emit_lambda_call(exp, env)
+      params = Helper.convert_sexp_to_array(exp)
+      name = params.shift
+
+      params.reverse.each do |p|
+        emit_expression(p, env)
+        asm.pushl(EAX)
+      end
+
+      asm.call(env.get_lambda(name))
+      asm.addl((params.size * 4), ESP)
     end
 
     def immediate_rep(immediate, env)
@@ -382,7 +453,7 @@ module Ioki
       bindings.each do |var, value|
         emit_expression(value, env)
         asm.pushl(EAX)
-        local_scope[var] = inc_reference_pointer
+        local_scope.add_variable(var, "-#{inc_reference_pointer}")
       end
 
       emit_expression(params[1], local_scope)
@@ -452,6 +523,24 @@ module Ioki
     def form?(exp)
       name = Helper.car(exp)
       FORMS[name] != nil
+    end
+
+    def letrec?(exp)
+      if exp.kind_of?(String) && exp.start_with?("(")
+        name = Helper.car(exp)
+        return "letrec" == name
+      end
+
+      false
+    end
+
+    def lambda_call?(exp, env)
+      if exp.start_with?("(")
+        name = Helper.car(exp)
+        return env.lambda?(name)
+      end
+
+      false
     end
 
     def new_label

@@ -1,21 +1,37 @@
 class Env
   def initialize(parent)
     @parent = parent
-    @env = {}
+    @variables = {}
+    @lambdas = {}
   end
 
-  def contain?(key)
-    return true if @env.has_key?(key)
-    return @parent.contain?(key) if @parent
+  def get_variable(key)
+    return @variables[key] if @variables.has_key?(key)
+    @parent.get_variable(key) if @parent
+  end
+
+  def add_variable(key, val)
+    @variables[key] = val
+  end
+
+  def variable?(key)
+    return true if @variables.has_key?(key)
+    return @parent.variable?(key) if @parent
     false
   end
 
-  def [](key)
-    return @env[key] if @env.has_key?(key)
-    @parent[key] if @parent
+  def lambda?(key)
+    return true if @lambdas.has_key?(key)
+    return @parent.lambda?(key) if @parent
+    false
   end
 
-  def []=(key, val)
-    @env[key] = val
+  def get_lambda(key)
+    return @lambdas[key] if @lambdas.has_key?(key)
+    @parent.get_lambda(key) if @parent
+  end
+
+  def add_lambda(key, val)
+    @lambdas[key] = val
   end
 end
