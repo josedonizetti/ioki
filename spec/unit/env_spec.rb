@@ -50,4 +50,22 @@ describe Env do
     expect(env.contain? :a).to eq(true)
     expect(env[:a]).to eq("a_parent")
   end
+
+  it "should return false/nil for variables that don't exist" do
+    parent = Env.new(nil)
+    env = Env.new(parent)
+
+    expect(parent.contain? :a).to eq(false)
+    expect(parent[:a]).to eq(nil)
+
+    expect(parent.contain? :x).to eq(false)
+    expect(parent[:x]).to eq(nil)
+
+    expect(env.contain? :x).to eq(false)
+    expect(env[:x]).to eq(nil)
+
+    expect(env.contain? :a).to eq(false)
+    expect(env[:a]).to eq(nil)
+  end
+
 end

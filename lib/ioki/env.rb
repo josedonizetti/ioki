@@ -6,8 +6,8 @@ class Env
 
   def contain?(key)
     return true if @env.has_key?(key)
-    r = @parent.contain?(key) if @parent
-    r != nil
+    return @parent.contain?(key) if @parent
+    false
   end
 
   def [](key)
