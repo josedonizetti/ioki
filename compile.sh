@@ -1,2 +1,2 @@
-gcc test.s lib/runtime.c -o test
+gcc -m32 test.s lib/runtime.c -o test
 ./test
