@@ -60,7 +60,7 @@ module Ioki
       asm.pushl(EBP)
       asm.movl(ESP, EBP)
 
-      env = {}
+      env = Env.new(nil)
       @reference_pointer = 0
       emit_expression(exp, env)
 
@@ -72,7 +72,7 @@ module Ioki
 
     def emit_expression(exp, env)
       case
-      when var?(exp, env); emit_var(exp, env)
+      when env.contain?(exp); emit_var(exp, env)
       when immediate?(exp); asm.movl(immediate_rep(exp, env), EAX)
       when unary_primitive?(exp); emit_unary_primitive(exp, env)
       when binary_primitive?(exp); emit_binary_primitive(exp, env)
@@ -365,13 +365,15 @@ module Ioki
       args = Helper.convert_bindings_to_array(params[0])
       bindings = Hash[*args]
 
+      local_scope = Env.new(env)
+
       bindings.each do |var, value|
         emit_expression(value, env)
         asm.pushl(EAX)
-        env[var] = inc_reference_pointer
+        local_scope[var] = inc_reference_pointer
       end
 
-      emit_expression(params[1], env)
+      emit_expression(params[1], local_scope)
     end
 
     private
@@ -438,10 +440,6 @@ module Ioki
     def form?(exp)
       name = Helper.car(exp)
       FORMS[name] != nil
-    end
-
-    def var?(exp, env)
-      env[exp] != nil
     end
 
     def new_label
