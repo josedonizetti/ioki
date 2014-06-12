@@ -48,7 +48,12 @@ describe "Procedures" do
                        (if (zero? x)
                            0
                            (+ 1 (f (sub1 x)))))])
-            (f 200))" => "200"
+            (f 200))" => "200",
+        "(letrec ([f (lambda (n)
+                   (if (zero? n)
+                     0
+                     (+ 1 (f (sub1 n)))))])
+            (f 500))" => "500"
       }}
 
 
