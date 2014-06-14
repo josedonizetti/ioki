@@ -9,6 +9,21 @@ describe "Procedures" do
     end
   end
 
+  describe "lambda" do
+      let(:procedures) {{
+        "((lambda (x) (+ x 12)) 1)" => "13",
+        "((lambda (a b c) (+ a b c)) 1 2 3)" => "6",
+        "((lambda (a b c)
+            (if (= a 1) (+ b c) #f)) 1 2 3)" => "5",
+        "((lambda (a b c)
+            (if (= b 2) (+ a c) #f)) 1 2 3)" => "4",
+        "((lambda (a b c)
+            (if (= c 3) (+ a b) #f)) 1 2 3)" => "3",
+      }}
+
+      it_behaves_like "a form"
+  end
+
   describe "letrec" do
       let(:procedures) {{
         "(letrec ([f (lambda (a b) (+ a b))]) (f 10 1))" => "11",

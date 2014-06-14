@@ -119,6 +119,7 @@ module Ioki
       when binary_primitive?(exp); emit_binary_primitive(exp, env)
       when form?(exp); emit_form(exp, env)
       when lambda_call?(exp, env); emit_lambda_call(exp, env)
+      when lambda_execution?(exp); emit_lambda_execution(exp, env)
       end
     end
 
@@ -459,6 +460,34 @@ module Ioki
       emit_expression(params[1], local_scope)
     end
 
+    def emit_lambda_execution(exp, env)
+      locals = Env.new(env)
+
+      params = Helper.convert_sexp_to_array(exp)
+      exp  = params.shift
+
+      array = Helper.convert_sexp_to_array(exp)
+      args = array[1]
+      body = array[2]
+
+      if args == "()"
+        args = []
+      else
+        args = args[1, args.size - 2].split
+      end
+
+      reference_pointer = 0
+      params.reverse.each do |p|
+        asm.pushl("$"+immediate_rep(p, env).to_s)
+        reference_pointer += 4
+        locals.add_variable(args.pop, "-#{reference_pointer}")
+      end
+
+      emit_expression(body, locals)
+
+      asm.addl("$"+(params.size*4).to_s,ESP)
+    end
+
     private
 
     def emit_cmp_bool_result
@@ -541,6 +570,12 @@ module Ioki
       end
 
       false
+    end
+
+    def lambda_execution?(exp)
+      if /lambda/ =~ exp
+        exp.start_with?("((")
+      end
     end
 
     def new_label
