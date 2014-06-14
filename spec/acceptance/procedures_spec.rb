@@ -9,7 +9,7 @@ describe "Procedures" do
     end
   end
 
-  describe "lambda" do
+  describe "lambda inline execution" do
       let(:procedures) {{
         "((lambda (x) (+ x 12)) 1)" => "13",
         "((lambda (a b c) (+ a b c)) 1 2 3)" => "6",
